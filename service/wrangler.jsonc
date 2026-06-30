@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "service",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-30",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "TURSO_URL": "libsql://rakit-io-db-your-org.turso.io",
+    "AI_BASE_URL": "https://api.openai.com/v1",
+    "AI_MODEL": "gpt-4o"
+  },
+  "turso": [
+    {
+      "binding": "TURSO",
+      "service": "rakit-io-db"
+    }
+  ]
+}

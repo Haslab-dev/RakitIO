@@ -1,0 +1,21 @@
+{
+  "name": "@rakit-io/service",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "typecheck": "tsc --noEmit",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "hono": "^4.12.27",
+    "drizzle-orm": "^0.44.0",
+    "@libsql/client": "^0.15.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.4.0",
+    "drizzle-kit": "^0.31.0",
+    "@cloudflare/workers-types": "^4.20250628.0",
+    "typescript": "~6.0.2"
+  }
+}
