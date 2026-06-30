@@ -1,39 +1,70 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'react-router'
 import { useProject } from '../lib/hooks/useApi'
 import { useProjectStore, useUIStore, useSimulationStore } from '../lib/stores'
+import { destroySimulationBridge } from '../lib/simulationWorker'
 import Layout from '../components/Layout'
 import MonacoEditor from '../components/MonacoEditor'
 import ProjectExplorer from '../components/ProjectExplorer'
 import ComponentLibrary from '../components/ComponentLibrary'
 import AIChat from '../components/AIChat'
-import AISettings from '../components/AISettings'
 import WiringPlayground from '../components/WiringPlayground'
 import SerialMonitor from '../components/SerialMonitor'
 import SimulationControls from '../components/SimulationControls'
+import DeviceInspector from '../components/DeviceInspector'
+import VariableInspector from '../components/VariableInspector'
+import LogicAnalyzer from '../components/LogicAnalyzer'
+import {
+  IconX,
+  IconFolder,
+  IconCpu,
+  IconAdjustments,
+  IconBug,
+  IconMessageChatbot,
+  IconBook,
+} from '@tabler/icons-react'
 
-type MainTab = 'code' | 'wiring'
+type LeftTab = 'files' | 'components'
+type RightTab = 'properties' | 'variables' | 'ai' | 'docs'
 
 export default function EditorPage() {
   const { id } = useParams<{ id: string }>()
   const { data, isLoading, error } = useProject(id!)
   const setProject = useProjectStore((s) => s.setProject)
   const project = useProjectStore((s) => s.project)
-  const activePanel = useUIStore((s) => s.activePanel)
   const activeFileId = useUIStore((s) => s.activeFileId)
   const setActiveFile = useUIStore((s) => s.setActiveFile)
   const bottomPanelOpen = useUIStore((s) => s.bottomPanelOpen)
   const toggleBottomPanel = useUIStore((s) => s.toggleBottomPanel)
   const activeBottomTab = useUIStore((s) => s.activeBottomTab)
   const setActiveBottomTab = useUIStore((s) => s.setActiveBottomTab)
-  const sidebarOpen = useUIStore((s) => s.sidebarOpen)
-  const simState = useSimulationStore((s) => s.state)
+  const selection = useUIStore((s) => s.selection)
 
-  const [mainTab, setMainTab] = useState<MainTab>('code')
+  // Sidebar Tab States
+  const [leftTab, setLeftTab] = useState<LeftTab>('files')
+  const [rightTab, setRightTab] = useState<RightTab>('properties')
+  const leftSidebarOpen = true
+  const rightSidebarOpen = true
+
+  // Resizable Bottom Panel States
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(260)
+  const [isResizing, setIsResizing] = useState(false)
+  const splitterRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (data) setProject(data)
   }, [data, setProject])
+
+  // Stop the simulation and tear down the worker when leaving this project
+  // (navigating back to dashboard) or switching to a different project id.
+  // This prevents a stale/cached worker from running the previous project's
+  // code against the newly loaded project.
+  useEffect(() => {
+    return () => {
+      useSimulationStore.getState().reset()
+      destroySimulationBridge()
+    }
+  }, [id])
 
   useEffect(() => {
     if (project?.files.length && !activeFileId) {
@@ -44,163 +75,232 @@ export default function EditorPage() {
     }
   }, [project, activeFileId, setActiveFile])
 
-  const handleTabSwitch = useCallback((tab: MainTab) => {
-    setMainTab(tab)
-    if (tab === 'wiring') {
-      setActiveFile(null)
-    } else if (tab === 'code') {
-      const proj = useProjectStore.getState().project
-      if (proj?.files.length) {
-        const mainFile = proj.files.find((f) => f.name.endsWith('.ino')) ?? proj.files[0]
-        if (mainFile) setActiveFile(mainFile.id)
-      }
+  // Splitter Resize Handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+  }, [])
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizing) return
+    const newHeight = window.innerHeight - e.clientY
+    const maxHeight = window.innerHeight * 0.7
+    setBottomPanelHeight(Math.max(180, Math.min(newHeight, maxHeight)))
+  }, [isResizing])
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false)
+  }, [])
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+    } else {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [setActiveFile])
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isResizing, handleMouseMove, handleMouseUp])
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-bg-primary text-text-secondary">
-        Loading project...
+      <div className="h-screen flex items-center justify-center bg-bg-primary text-text-secondary font-mono text-xs animate-pulse">
+        Loading workspace...
       </div>
     )
   }
 
   if (error || !data) {
     return (
-      <div className="h-screen flex items-center justify-center bg-bg-primary text-text-secondary">
+      <div className="h-screen flex items-center justify-center bg-bg-primary text-error font-semibold">
         Failed to load project
       </div>
     )
   }
 
-  const renderSidePanel = () => {
-    switch (activePanel) {
-      case 'files':
-        return <ProjectExplorer />
-      case 'components':
-        return <ComponentLibrary />
-      case 'ai':
-        return <AIChat />
-      case 'ai-settings':
-        return <AISettings />
-      default:
-        return null
-    }
-  }
-
   return (
     <Layout>
-      <div className="flex-1 flex min-h-0">
-        {sidebarOpen && (
-          <aside className="w-64 border-r border-border bg-bg-secondary flex flex-col min-h-0">
-            {renderSidePanel()}
-          </aside>
-        )}
-
-        <div className="flex-1 flex flex-col min-h-0 min-w-0">
-          <div className="flex border-b border-border bg-bg-secondary items-center">
-            <button
-              onClick={() => handleTabSwitch('code')}
-              className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
-                mainTab === 'code'
-                  ? 'border-accent text-text-primary'
-                  : 'border-transparent text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              Code
-            </button>
-            <button
-              onClick={() => handleTabSwitch('wiring')}
-              className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
-                mainTab === 'wiring'
-                  ? 'border-accent text-text-primary'
-                  : 'border-transparent text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              Wiring
-            </button>
-
-            {mainTab === 'code' && project?.files.some((f) => f.isOpen) && (
-              <>
-                <div className="w-px h-4 bg-border mx-1" />
-                {project.files
-                  .filter((f) => f.isOpen)
-                  .map((f) => (
-                    <button
-                      key={f.id}
-                      onClick={() => setActiveFile(f.id)}
-                      className={`px-3 py-2 text-xs border-r border-border transition-colors ${
-                        f.id === activeFileId
-                          ? 'bg-bg-primary text-text-primary'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
-                      }`}
-                    >
-                      {f.name}
-                      {f.isDirty && <span className="ml-1 text-warning">*</span>}
-                    </button>
-                  ))}
-              </>
-            )}
-
-            <div className="flex-1" />
-
-            {simState !== 'idle' && (
-              <span className="text-xs text-text-secondary px-3">
-                {simState === 'running' ? '🟢' : simState === 'paused' ? '🟡' : '🔴'}
-                {' '}
-                {simState}
-              </span>
-            )}
-          </div>
-
-          <div className="flex-1 min-h-0">
-            {mainTab === 'code' ? <MonacoEditor /> : <WiringPlayground />}
-          </div>
-
-          {bottomPanelOpen && (
-            <div className="border-t border-border bg-bg-secondary" style={{ height: 200 }}>
-              <div className="flex items-center border-b border-border px-2">
-                {(['serial', 'output', 'problems'] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveBottomTab(tab)}
-                    className={`px-3 py-1.5 text-xs capitalize transition-colors ${
-                      activeBottomTab === tab
-                        ? 'text-text-primary border-b-2 border-accent'
-                        : 'text-text-secondary hover:text-text-primary'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-                <div className="flex-1" />
+      <div className="flex-1 flex flex-col min-h-0 relative">
+        
+        {/* Main Split Area (Top: Workspace, Bottom: Resizable Panel) */}
+        <div className="flex-1 flex min-h-0 relative">
+          
+          {/* Left Sidebar */}
+          {leftSidebarOpen && (
+            <aside className="w-64 border-r border-border bg-bg-secondary flex flex-col min-h-0">
+              <div className="flex border-b border-border bg-bg-tertiary h-10 shrink-0">
                 <button
-                  onClick={toggleBottomPanel}
-                  className="px-2 py-1 text-xs text-text-secondary hover:text-text-primary"
-                  title="Close panel"
+                  onClick={() => setLeftTab('files')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+                    leftTab === 'files'
+                      ? 'border-accent text-text-primary bg-bg-secondary/40'
+                      : 'border-transparent text-text-secondary hover:text-text-primary'
+                  }`}
                 >
-                  ✕
+                  <IconFolder size={14} /> Explorer
+                </button>
+                <button
+                  onClick={() => setLeftTab('components')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+                    leftTab === 'components'
+                      ? 'border-accent text-text-primary bg-bg-secondary/40'
+                      : 'border-transparent text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  <IconCpu size={14} /> Palette
                 </button>
               </div>
-              <div className="h-[calc(100%-32px)] overflow-auto">
-                {activeBottomTab === 'serial' && <SerialMonitor />}
-                {activeBottomTab === 'output' && (
-                  <div className="p-3 text-text-secondary text-xs font-mono">
-                    Build output will appear here.
-                  </div>
+              <div className="flex-1 overflow-y-auto">
+                {leftTab === 'files' ? <ProjectExplorer /> : <ComponentLibrary />}
+              </div>
+            </aside>
+          )}
+
+          {/* Center Wiring Canvas */}
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 relative bg-bg-primary">
+            <WiringPlayground />
+          </div>
+
+          {/* Right Sidebar (Inspector) */}
+          {rightSidebarOpen && (
+            <aside className="w-72 border-l border-border bg-bg-secondary flex flex-col min-h-0">
+              <div className="flex border-b border-border bg-bg-tertiary h-10 shrink-0">
+                {(
+                  [
+                    { id: 'properties', label: 'Properties', icon: <IconAdjustments size={14} /> },
+                    { id: 'variables', label: 'Debugger', icon: <IconBug size={14} /> },
+                    { id: 'ai', label: 'AI Copilot', icon: <IconMessageChatbot size={14} /> },
+                    { id: 'docs', label: 'Docs', icon: <IconBook size={14} /> },
+                  ] as const
+                ).map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setRightTab(tab.id)}
+                    className={`flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold border-b-2 transition-all cursor-pointer py-1 ${
+                      rightTab === tab.id
+                        ? 'border-accent text-text-primary bg-bg-secondary/40'
+                        : 'border-transparent text-text-secondary hover:text-text-primary'
+                    }`}
+                    title={tab.label}
+                  >
+                    {tab.icon}
+                    <span>{tab.label.split(' ')[0]}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {rightTab === 'properties' && (
+                  selection && selection.type === 'component' ? (
+                    <DeviceInspector />
+                  ) : (
+                    <div className="p-4 text-xs text-text-secondary font-mono text-center">
+                      Select a component on the canvas to inspect its properties.
+                    </div>
+                  )
                 )}
-                {activeBottomTab === 'problems' && (
-                  <div className="p-3 text-text-secondary text-xs font-mono">
-                    No problems detected.
+                {rightTab === 'variables' && <VariableInspector />}
+                {rightTab === 'ai' && <AIChat />}
+                {rightTab === 'docs' && (
+                  <div className="p-4 text-xs text-text-secondary font-mono leading-relaxed">
+                    <h3 className="font-semibold text-text-primary mb-2">Workspace Docs</h3>
+                    <p className="mb-2">Drag components from the Palette to the canvas, then click on pin nodes to draw wires.</p>
+                    <h4 className="font-semibold text-text-primary mt-4 mb-1">C++ VM builtins:</h4>
+                    <ul className="list-disc list-inside space-y-1 text-[11px]">
+                      <li>pinMode(pin, mode)</li>
+                      <li>digitalWrite(pin, val)</li>
+                      <li>digitalRead(pin)</li>
+                      <li>analogWrite(pin, val)</li>
+                      <li>analogRead(pin)</li>
+                      <li>delay(ms)</li>
+                    </ul>
                   </div>
                 )}
               </div>
-            </div>
+            </aside>
           )}
-        </div>
-      </div>
 
-      <SimulationControls />
+        </div>
+
+        {/* Resizable Bottom Panel (Monaco + Console) */}
+        {bottomPanelOpen && (
+          <div
+            className="border-t border-border bg-bg-secondary flex flex-col shrink-0 min-h-0"
+            style={{ height: bottomPanelHeight }}
+          >
+            {/* Horizontal Drag Splitter */}
+            <div
+              ref={splitterRef}
+              onMouseDown={handleMouseDown}
+              className="h-1 bg-border hover:bg-accent cursor-row-resize transition-colors select-none shrink-0"
+            />
+
+            <div className="flex-1 flex min-h-0">
+              
+              {/* Left Side: Monaco Code Editor */}
+              <div className="w-3/5 border-r border-border flex flex-col min-h-0">
+                <div className="flex items-center border-b border-border px-3 h-8 shrink-0 bg-bg-tertiary">
+                  <span className="text-xs font-mono font-semibold text-text-secondary">sketch.ino</span>
+                </div>
+                <div className="flex-1 min-h-0 relative">
+                  <MonacoEditor />
+                </div>
+              </div>
+
+              {/* Right Side: Tabbed Consoles */}
+              <div className="w-2/5 flex flex-col min-h-0">
+                <div className="flex items-center border-b border-border px-2 h-8 shrink-0 bg-bg-tertiary">
+                  {(
+                    [
+                      { id: 'serial', label: 'Serial Monitor' },
+                      { id: 'variables', label: 'Variables' },
+                      { id: 'logic', label: 'Logic Analyzer' },
+                      { id: 'output', label: 'Build Output' },
+                    ] as const
+                  ).map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveBottomTab(tab.id as any)}
+                      className={`px-3 h-full text-xs font-semibold transition-all cursor-pointer ${
+                        activeBottomTab === tab.id
+                          ? 'text-text-primary border-b-2 border-accent'
+                          : 'text-text-secondary hover:text-text-primary'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                  <div className="flex-1" />
+                  <button
+                    onClick={toggleBottomPanel}
+                    className="p-1 text-text-secondary hover:text-text-primary cursor-pointer flex items-center justify-center"
+                    title="Close panel"
+                  >
+                    <IconX size={14} />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-auto bg-[#050508]">
+                  {activeBottomTab === 'serial' && <SerialMonitor />}
+                  {activeBottomTab === 'variables' && <VariableInspector />}
+                  {activeBottomTab === 'logic' && <LogicAnalyzer />}
+                  {activeBottomTab === 'output' && (
+                    <div className="p-3 text-text-secondary text-xs font-mono">
+                      Build output will appear here.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* Global Floating Simulation Controls Footer */}
+        <SimulationControls />
+      </div>
     </Layout>
   )
 }
