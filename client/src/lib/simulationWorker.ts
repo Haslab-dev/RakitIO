@@ -1,5 +1,5 @@
 import type { SimulationSnapshot, SimulationEvent, SimulationState } from './types'
-import { useSimulationStore } from './stores'
+import { useSimulationStore, useProjectStore } from './stores'
 
 export interface WorkerMessage {
   type: 'snapshot' | 'serial' | 'event' | 'state' | 'error'
@@ -55,9 +55,30 @@ export class SimulationWorkerBridge {
     }
   }
 
-  start(code: string, config?: Record<string, unknown>) {
+  start(code: string) {
     this.ensureWorker()
-    this.worker!.postMessage({ type: 'start', payload: { code, config } })
+    
+    // Get active project structure from store
+    const project = useProjectStore.getState().project
+    const boardId = project?.settings?.boardId || 'esp32-devkit-v1';
+    const components = project?.components || [];
+    const wires = project?.wires || [];
+
+    const simStore = this.getStore();
+
+    this.worker!.postMessage({
+      type: 'start',
+      payload: {
+        code,
+        components,
+        wires,
+        boardId,
+        config: {
+          speed: simStore.config.speed,
+          breakpoints: simStore.config.breakpoints,
+        }
+      }
+    })
 
     const unsub = useSimulationStore.subscribe((state, prev) => {
       if (state.state !== prev.state) {
@@ -86,6 +107,14 @@ export class SimulationWorkerBridge {
 
   resume() {
     this.worker?.postMessage({ type: 'resume' })
+  }
+
+  interact(deviceId: string, property: string, value: any) {
+    this.ensureWorker();
+    this.worker!.postMessage({
+      type: 'interact',
+      payload: { deviceId, property, value }
+    });
   }
 
   step() {
