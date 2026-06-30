@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type PanelTab = 'files' | 'components' | 'ai' | 'ai-settings';
-export type BottomTab = 'serial' | 'output' | 'problems';
+export type BottomTab = 'serial' | 'variables' | 'logic' | 'output' | 'problems';
 
 interface SelectionInfo {
   type: 'component' | 'wire' | 'pin';

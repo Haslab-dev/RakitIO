@@ -8,6 +8,16 @@ import EditorPage from './pages/EditorPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isInitialized = useAuthStore((s) => s.isInitialized)
+
+  if (!isInitialized) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#060609] text-slate-400 text-xs font-mono animate-pulse">
+        Loading workspace...
+      </div>
+    )
+  }
+
   if (!isAuthenticated) return <Navigate to="/auth" replace />
   return <>{children}</>
 }

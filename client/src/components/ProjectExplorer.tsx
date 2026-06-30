@@ -1,4 +1,5 @@
 import { useProjectStore, useUIStore } from '../lib/stores'
+import { IconFileText, IconCpu, IconChevronRight } from '@tabler/icons-react'
 
 export default function ProjectExplorer() {
   const project = useProjectStore((s) => s.project)
@@ -31,7 +32,7 @@ export default function ProjectExplorer() {
   return (
     <div className="flex flex-col h-full">
       <div className="px-3 py-2 border-b border-border flex items-center justify-between">
-        <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
           Explorer
         </span>
       </div>
@@ -40,7 +41,7 @@ export default function ProjectExplorer() {
           <div key={folder || '__root'}>
             {folder && (
               <div className="px-3 py-1 text-xs text-text-secondary flex items-center gap-1">
-                <span className="text-text-secondary">▸</span>
+                <IconChevronRight size={12} className="text-text-secondary" />
                 {folder}
               </div>
             )}
@@ -48,16 +49,16 @@ export default function ProjectExplorer() {
               <button
                 key={file.id}
                 onClick={() => handleFileClick(file.id)}
-                className={`w-full text-left px-3 py-1 text-xs flex items-center gap-2 transition-colors ${
+                className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 transition-colors cursor-pointer ${
                   file.id === activeFileId
-                    ? 'bg-accent/15 text-accent'
+                    ? 'bg-accent/10 text-accent font-semibold border-l-2 border-accent'
                     : 'text-text-primary hover:bg-bg-hover'
                 }`}
                 style={{ paddingLeft: folder ? 28 : 12 }}
               >
                 <FileIcon name={file.name} />
                 <span className="truncate">{file.name}</span>
-                {file.isDirty && <span className="text-warning ml-auto">●</span>}
+                {file.isDirty && <span className="text-warning ml-auto text-[10px]">●</span>}
               </button>
             ))}
           </div>
@@ -69,18 +70,9 @@ export default function ProjectExplorer() {
 
 function FileIcon({ name }: { name: string }) {
   const ext = name.split('.').pop()?.toLowerCase() ?? ''
-  const color =
-    ext === 'ino' || ext === 'cpp' || ext === 'c'
-      ? 'text-accent'
-      : ext === 'h'
-        ? 'text-warning'
-        : ext === 'json'
-          ? 'text-success'
-          : 'text-text-secondary'
-
-  return (
-    <span className={`${color} text-xs leading-none`}>
-      {ext === 'ino' ? '⚡' : '📄'}
-    </span>
-  )
+  
+  if (ext === 'ino' || ext === 'cpp' || ext === 'c') {
+    return <IconCpu size={14} className="text-accent" />
+  }
+  return <IconFileText size={14} className="text-text-secondary" />
 }
