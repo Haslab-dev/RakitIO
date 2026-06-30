@@ -9,6 +9,7 @@ interface SelectionInfo {
 }
 
 interface UIState {
+  theme: 'light' | 'dark';
   sidebarOpen: boolean;
   sidebarWidth: number;
   activePanel: PanelTab;
@@ -20,6 +21,7 @@ interface UIState {
   panX: number;
   panY: number;
   selection: SelectionInfo | null;
+  toggleTheme: () => void;
   toggleSidebar: () => void;
   setSidebarWidth: (w: number) => void;
   setActivePanel: (tab: PanelTab) => void;
@@ -34,6 +36,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
+  theme: (localStorage.getItem('rakit_theme') as 'light' | 'dark') ?? 'dark',
   sidebarOpen: true,
   sidebarWidth: 260,
   activePanel: 'files',
@@ -46,6 +49,13 @@ export const useUIStore = create<UIState>((set) => ({
   panY: 0,
   selection: null,
 
+  toggleTheme: () =>
+    set((s) => {
+      const next = s.theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('rakit_theme', next);
+      document.documentElement.classList.toggle('dark', next === 'dark');
+      return { theme: next };
+    }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setSidebarWidth: (w) => set({ sidebarWidth: w }),
   setActivePanel: (tab) => set({ activePanel: tab }),

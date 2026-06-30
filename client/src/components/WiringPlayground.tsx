@@ -326,12 +326,16 @@ export default function WiringPlayground() {
           </g>
 
           {project.wires.map((wire) => {
-            const fromComp = project.components.find((c) => c.id === wire.from.componentId)
-            const toComp = project.components.find((c) => c.id === wire.to.componentId)
+            const fromId = wire.from?.componentId ?? wire.sourceComponentId
+            const fromPin = wire.from?.pinId ?? wire.sourcePinId
+            const toId = wire.to?.componentId ?? wire.targetComponentId
+            const toPin = wire.to?.pinId ?? wire.targetPinId
+            const fromComp = project.components.find((c) => c.id === fromId)
+            const toComp = project.components.find((c) => c.id === toId)
             if (!fromComp || !toComp) return null
 
-            const fromPos = getPinWorldPos(fromComp, wire.from.pinId)
-            const toPos = getPinWorldPos(toComp, wire.to.pinId)
+            const fromPos = getPinWorldPos(fromComp, fromPin)
+            const toPos = getPinWorldPos(toComp, toPin)
             if (!fromPos || !toPos) return null
 
             const isSelected = selection?.type === 'wire' && selection.id === wire.id
