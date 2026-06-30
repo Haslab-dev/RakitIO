@@ -19,11 +19,11 @@ const LIBRARY_COMPONENTS: ComponentDefinition[] = [
     name: 'LED',
     category: 'LEDs',
     description: 'Standard light-emitting diode',
-    width: 30,
-    height: 40,
+    width: 50,
+    height: 66,
     pins: [
-      { id: 'anode', name: 'Anode', mode: 'INPUT' as never, x: 15, y: 0 },
-      { id: 'cathode', name: 'Cathode', mode: 'GND' as never, x: 15, y: 40 },
+      { id: 'anode', name: 'Anode', mode: 'INPUT' as never, x: 29, y: 58 },
+      { id: 'cathode', name: 'Cathode', mode: 'GND' as never, x: 21, y: 58 },
     ],
     icon: '💡',
     defaultCode: 'pinMode(LED_PIN, OUTPUT);\ndigitalWrite(LED_PIN, HIGH);',
@@ -33,13 +33,13 @@ const LIBRARY_COMPONENTS: ComponentDefinition[] = [
     name: 'RGB LED',
     category: 'LEDs',
     description: 'Red, green, blue LED',
-    width: 40,
-    height: 40,
+    width: 66,
+    height: 66,
     pins: [
-      { id: 'r', name: 'R', mode: 'PWM' as never, x: 0, y: 20 },
-      { id: 'g', name: 'G', mode: 'PWM' as never, x: 20, y: 0 },
-      { id: 'b', name: 'B', mode: 'PWM' as never, x: 40, y: 20 },
-      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 20, y: 40 },
+      { id: 'r', name: 'R', mode: 'PWM' as never, x: 21, y: 58 },
+      { id: 'g', name: 'G', mode: 'PWM' as never, x: 29, y: 58 },
+      { id: 'b', name: 'B', mode: 'PWM' as never, x: 37, y: 58 },
+      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 45, y: 58 },
     ],
     icon: '🌈',
   },
@@ -48,11 +48,11 @@ const LIBRARY_COMPONENTS: ComponentDefinition[] = [
     name: 'Push Button',
     category: 'Input',
     description: 'Momentary tactile push button',
-    width: 36,
-    height: 36,
+    width: 60,
+    height: 60,
     pins: [
-      { id: 'pin1', name: 'Pin 1', mode: 'INPUT' as never, x: 0, y: 18 },
-      { id: 'pin2', name: 'Pin 2', mode: 'INPUT' as never, x: 36, y: 18 },
+      { id: 'pin1', name: 'Pin 1', mode: 'INPUT' as never, x: 12, y: 30 },
+      { id: 'pin2', name: 'Pin 2', mode: 'INPUT' as never, x: 48, y: 30 },
     ],
     icon: '🔘',
   },
@@ -61,12 +61,12 @@ const LIBRARY_COMPONENTS: ComponentDefinition[] = [
     name: 'Potentiometer',
     category: 'Input',
     description: 'Variable resistor (10kΩ)',
-    width: 40,
-    height: 40,
+    width: 66,
+    height: 66,
     pins: [
-      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 0, y: 20 },
-      { id: 'wiper', name: 'Wiper', mode: 'ANALOG' as never, x: 20, y: 0 },
-      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 40, y: 20 },
+      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 21, y: 62 },
+      { id: 'wiper', name: 'Wiper', mode: 'ANALOG' as never, x: 33, y: 62 },
+      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 45, y: 62 },
     ],
     icon: '🎚',
   },
@@ -75,12 +75,12 @@ const LIBRARY_COMPONENTS: ComponentDefinition[] = [
     name: 'Servo Motor',
     category: 'Actuators',
     description: 'SG90 micro servo motor',
-    width: 50,
-    height: 40,
+    width: 86,
+    height: 66,
     pins: [
-      { id: 'signal', name: 'Signal', mode: 'PWM' as never, x: 0, y: 10 },
-      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 25, y: 0 },
-      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 50, y: 10 },
+      { id: 'signal', name: 'Signal', mode: 'PWM' as never, x: -25, y: 20 },
+      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: -25, y: 33 },
+      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: -25, y: 46 },
     ],
     icon: '⚙️',
   },
@@ -89,27 +89,57 @@ const LIBRARY_COMPONENTS: ComponentDefinition[] = [
     name: 'DHT11',
     category: 'Sensors',
     description: 'Temperature and humidity sensor',
-    width: 40,
-    height: 50,
+    width: 66,
+    height: 82,
     pins: [
-      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 0, y: 10 },
-      { id: 'data', name: 'Data', mode: 'INPUT' as never, x: 20, y: 0 },
-      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 40, y: 10 },
+      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 21, y: 74 },
+      { id: 'data', name: 'Data', mode: 'INPUT' as never, x: 33, y: 74 },
+      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 45, y: 74 },
     ],
     icon: '🌡',
+  },
+  {
+    id: 'bme280',
+    name: 'BME280',
+    category: 'Sensors',
+    description: 'I2C temperature, humidity & pressure sensor',
+    width: 42,
+    height: 44,
+    pins: [
+      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 6, y: 40 },
+      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 16, y: 40 },
+      { id: 'scl', name: 'SCL', mode: 'I2C_SCL' as never, x: 26, y: 40 },
+      { id: 'sda', name: 'SDA', mode: 'I2C_SDA' as never, x: 36, y: 40 },
+    ],
+    icon: '🌡',
+  },
+  {
+    id: 'ssd1306',
+    name: 'OLED SSD1306',
+    category: 'Communication',
+    description: '0.96" I2C OLED display (128x64)',
+    width: 38,
+    height: 40,
+    pins: [
+      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 10, y: 36 },
+      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 16, y: 36 },
+      { id: 'scl', name: 'SCL', mode: 'I2C_SCL' as never, x: 22, y: 36 },
+      { id: 'sda', name: 'SDA', mode: 'I2C_SDA' as never, x: 28, y: 36 },
+    ],
+    icon: '🖥',
   },
   {
     id: 'ultrasonic',
     name: 'Ultrasonic Sensor',
     category: 'Sensors',
     description: 'HC-SR04 distance sensor',
-    width: 60,
-    height: 40,
+    width: 100,
+    height: 66,
     pins: [
-      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 0, y: 20 },
-      { id: 'trig', name: 'Trig', mode: 'OUTPUT' as never, x: 20, y: 0 },
-      { id: 'echo', name: 'Echo', mode: 'INPUT' as never, x: 40, y: 0 },
-      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 60, y: 20 },
+      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 32, y: 58 },
+      { id: 'trig', name: 'Trig', mode: 'OUTPUT' as never, x: 44, y: 58 },
+      { id: 'echo', name: 'Echo', mode: 'INPUT' as never, x: 56, y: 58 },
+      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 68, y: 58 },
     ],
     icon: '📡',
   },
@@ -118,11 +148,11 @@ const LIBRARY_COMPONENTS: ComponentDefinition[] = [
     name: 'Resistor',
     category: 'Passive',
     description: '220Ω resistor',
-    width: 40,
-    height: 16,
+    width: 50,
+    height: 20,
     pins: [
-      { id: 'pin1', name: 'Pin 1', mode: 'INPUT' as never, x: 0, y: 8 },
-      { id: 'pin2', name: 'Pin 2', mode: 'OUTPUT' as never, x: 40, y: 8 },
+      { id: 'pin1', name: 'Pin 1', mode: 'INPUT' as never, x: 0, y: 10 },
+      { id: 'pin2', name: 'Pin 2', mode: 'OUTPUT' as never, x: 50, y: 10 },
     ],
     icon: '⚡',
   },
@@ -131,13 +161,13 @@ const LIBRARY_COMPONENTS: ComponentDefinition[] = [
     name: 'LCD 16x2',
     category: 'Communication',
     description: '16x2 character LCD display (I2C)',
-    width: 80,
-    height: 50,
+    width: 130,
+    height: 80,
     pins: [
-      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 0, y: 10 },
-      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 0, y: 30 },
-      { id: 'sda', name: 'SDA', mode: 'I2C_SDA' as never, x: 80, y: 10 },
-      { id: 'scl', name: 'SCL', mode: 'I2C_SCL' as never, x: 80, y: 30 },
+      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 26, y: 72 },
+      { id: 'vcc', name: 'VCC', mode: 'VCC' as never, x: 52, y: 72 },
+      { id: 'scl', name: 'SCL', mode: 'I2C_SCL' as never, x: 78, y: 72 },
+      { id: 'sda', name: 'SDA', mode: 'I2C_SDA' as never, x: 104, y: 72 },
     ],
     icon: '📺',
   },
@@ -146,11 +176,11 @@ const LIBRARY_COMPONENTS: ComponentDefinition[] = [
     name: 'Buzzer',
     category: 'Actuators',
     description: 'Piezo buzzer',
-    width: 30,
-    height: 30,
+    width: 52,
+    height: 52,
     pins: [
-      { id: 'signal', name: 'Signal', mode: 'PWM' as never, x: 15, y: 0 },
-      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 15, y: 30 },
+      { id: 'signal', name: 'Signal', mode: 'PWM' as never, x: 18, y: 46 },
+      { id: 'gnd', name: 'GND', mode: 'GND' as never, x: 34, y: 46 },
     ],
     icon: '🔔',
   },
@@ -221,25 +251,26 @@ export default function ComponentLibrary() {
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto py-1">
+      <div className="flex-1 overflow-y-auto p-3 grid grid-cols-2 gap-2 content-start">
         {filtered.map((comp) => (
           <button
             key={comp.id}
             onClick={() => handleAdd(comp)}
-            className="w-full text-left px-3 py-2 hover:bg-bg-hover transition-colors flex items-start gap-2"
+            className="flex flex-col items-center justify-center p-3 rounded-lg border border-border bg-bg-primary hover:bg-bg-hover transition-all duration-200 group hover:border-accent/30 text-center cursor-pointer shadow-sm hover:shadow"
           >
-            <span className="text-lg leading-none mt-0.5">{comp.icon}</span>
-            <div className="min-w-0">
-              <div className="text-xs font-medium text-text-primary">{comp.name}</div>
-              <div className="text-xs text-text-secondary truncate">{comp.description}</div>
-              <div className="text-xs text-text-secondary mt-0.5">
-                {comp.pins.length} pins · {comp.category}
-              </div>
+            <span className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
+              {comp.icon}
+            </span>
+            <div className="text-[10px] font-semibold text-text-primary truncate w-full">
+              {comp.name}
+            </div>
+            <div className="text-[9px] text-text-secondary truncate w-full mt-0.5">
+              {comp.category}
             </div>
           </button>
         ))}
         {filtered.length === 0 && (
-          <div className="px-3 py-4 text-text-secondary text-xs text-center">
+          <div className="col-span-2 py-8 text-text-secondary text-xs text-center">
             No components match your search.
           </div>
         )}

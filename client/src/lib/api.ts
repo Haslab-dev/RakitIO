@@ -1,5 +1,37 @@
 const API_BASE = '/api';
 
+interface NormalizedWire {
+  id: string;
+  from: { componentId: string; pinId: string };
+  to: { componentId: string; pinId: string };
+  color: string;
+  points: { x: number; y: number }[];
+}
+
+// Convert any legacy wire shape (sourceComponentId/segments, etc.) into the
+// canonical WireConnection shape used throughout the app.
+function normalizeWires(wires: unknown): NormalizedWire[] {
+  if (!Array.isArray(wires)) return [];
+  return wires.map((w: any, idx: number) => {
+    const fromId = w.from?.componentId ?? w.sourceComponentId ?? w.source?.componentId;
+    const fromPin = w.from?.pinId ?? w.sourcePinId ?? w.source?.pinId;
+    const toId = w.to?.componentId ?? w.targetComponentId ?? w.target?.componentId;
+    const toPin = w.to?.pinId ?? w.targetPinId ?? w.target?.pinId;
+    const points = Array.isArray(w.points) && w.points.length >= 2
+      ? w.points
+      : Array.isArray(w.segments) && w.segments.length >= 2
+        ? w.segments
+        : [{ x: 0, y: 0 }, { x: 0, y: 0 }];
+    return {
+      id: w.id ?? `wire-${idx}`,
+      from: { componentId: fromId, pinId: fromPin },
+      to: { componentId: toId, pinId: toPin },
+      color: w.color ?? '#22c55e',
+      points,
+    };
+  });
+}
+
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem('rakit_token');
   const headers: Record<string, string> = {
@@ -50,7 +82,14 @@ export const api = {
     },
     get: async (id: string) => {
       const res = await request<{ project: { id: string; name: string; description: string; createdAt: string; updatedAt: string; version: number; data: { files: unknown[]; components: unknown[]; wires: unknown[]; settings: unknown } } }>(`/projects/${id}`);
-      return { ...res.project, ...res.project.data };
+      const data = res.project.data as any;
+      return {
+        ...res.project,
+        files: data.files ?? [],
+        components: data.components ?? [],
+        wires: normalizeWires(data.wires),
+        settings: data.settings ?? {},
+      };
     },
     create: async (data: { name: string; description?: string; boardId?: string }) => {
       const res = await request<{ project: { id: string; name: string } }>('/projects', {

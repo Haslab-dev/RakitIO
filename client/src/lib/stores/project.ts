@@ -19,6 +19,7 @@ interface ProjectState {
   addWire: (wire: WireConnection) => void;
   removeWire: (id: string) => void;
   updateWirePoints: (id: string, points: WirePoint[]) => void;
+  updateSettings: (settings: Partial<Project['settings']>) => void;
   undo: () => void;
   redo: () => void;
   save: () => Promise<void>;
@@ -83,7 +84,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         ...project,
         components: project.components.filter((c) => c.id !== id),
         wires: project.wires.filter(
-          (w) => w.from.componentId !== id && w.to.componentId !== id,
+          (w) =>
+            w.from?.componentId !== id &&
+            w.to?.componentId !== id,
         ),
       },
       isDirty: true,
@@ -138,6 +141,19 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     set((state) => ({
       ...pushHistory(state),
       project: { ...project, wires },
+      isDirty: true,
+    }));
+  },
+
+  updateSettings: (settings) => {
+    const { project } = get();
+    if (!project) return;
+    set((state) => ({
+      ...pushHistory(state),
+      project: {
+        ...project,
+        settings: { ...project.settings, ...settings },
+      },
       isDirty: true,
     }));
   },
