@@ -1,0 +1,14 @@
+{
+  "name": "rakit-io-ai",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "dev:client": "bun run --cwd client dev",
+    "dev:service": "bun run --cwd service dev",
+    "build:client": "bun run --cwd client build",
+    "build:service": "bun run --cwd service build",
+    "typecheck": "bun run --cwd client typecheck && bun run --cwd service typecheck",
+    "lint": "bun run --cwd client lint"
+  }
+}
