@@ -51,7 +51,14 @@ No Docker.
 
 No server-side simulator.
 
+No backend service.
+
 Simulation runs entirely inside the browser.
+
+> **Architecture decision (2026):** RakitIO is a **client-only** single-page
+> application. There is no server/Worker. The browser talks to the database
+> (Turso/libSQL over HTTP) directly and calls AI providers directly. See
+> "Data & Persistence" and "Security Tradeoffs" below.
 
 ---
 
@@ -99,16 +106,36 @@ AI knowledge.
 
 ---
 
-## Backend
+## Data & Persistence (client-only)
 
-* Cloudflare Workers
-* Hono
-* Drizzle ORM
-* Turso
-* Cloudflare R2
-* Cloudflare KV (optional cache)
-* Better Auth (or Auth.js if preferred)
-* AI Gateway
+The app has **no server**. Everything runs in the browser.
+
+* **Database:** Turso (libSQL) accessed directly from the browser via
+  `@libsql/client` (HTTP transport) and Drizzle ORM. Credentials are read from
+  `VITE_TURSO_URL` / `VITE_TURSO_AUTH_TOKEN` and bundled into the client.
+* **Auth:** Login/registration is performed client-side. Passwords are hashed
+  with Web Crypto (SHA-256) and the user record + sessions live in Turso. The
+  active session is persisted in `localStorage`.
+* **Schema migration / seed:** Plain scripts under `scripts/`
+  (`migrate.ts`, `seed.ts`) run under bun against the same Turso DB.
+
+### Security Tradeoffs (accepted)
+
+Because there is no backend:
+
+1. **The Turso auth token is exposed to anyone who opens the app.** All users
+   share the token, so ownership is enforced **at the application layer only**
+   (queries filter by `userId`), not by the database. Use a token with the
+   minimum required permissions.
+2. **AI keys are bring-your-own-key.** Users configure their own OpenAI /
+   Anthropic / OpenRouter key in Settings (stored in Turso / `localStorage`).
+   There is no server-side proxy to keep keys secret.
+3. **Password hashing is unsalted SHA-256** (matches the prior server scheme)
+   and happens in the browser. This is weak; it is acceptable for an
+   educational/local tool but not for sensitive data.
+
+If stronger isolation or secret protection is ever required, reintroduce a
+thin serverless function (Cloudflare/Pages) as a DB and/or AI proxy.
 
 ---
 
@@ -128,36 +155,27 @@ Supports:
 
 # Project Structure
 
-Two top-level applications, no monorepo packages.
-
-Shared logic lives as `lib/` directories inside each app.
+A single client-only application at the repository root (no monorepo, no
+service).
 
 ```text
-client/                         # Frontend (Vite + React)
+/                               # Client-only app (Vite + React)
     src/
         lib/
+            db/                 # Drizzle schema + libSQL (Turso) browser client
             svg/                # SVG rendering engine
-            simulator/          # Browser-side simulation worker bridge
-            types/              # Shared TypeScript types
+            simulator/          # Browser-side simulation engine + worker bridge
+            types/              # TypeScript types
             hooks/              # React hooks
             stores/             # Zustand stores
+            api.ts              # Data + AI access layer (talks to Turso / providers directly)
         components/             # UI components
-        routes/                 # React Router pages
+        pages/                  # React Router pages
         workers/                # Web Workers for simulation
-
-service/                        # Backend (Cloudflare Workers + Hono)
-    src/
-        lib/
-            ai/                 # AI provider abstraction
-            db/                 # Drizzle schema + Turso client
-            simulator/          # Simulation engine core
-            runtime/            # Arduino runtime abstraction
-            parser/             # Arduino code parser
-            device-sdk/         # Module system (module.json, logic, renderer)
-            project/            # Project model + serialization
-            shared/             # Types, constants, utilities
-        routes/                 # Hono API routes
-        middleware/             # Auth, CORS, etc.
+    scripts/
+        migrate.ts              # Idempotent schema creation (bun)
+        seed.ts                 # Demo user + example projects (bun)
+    spec/                       # RFCs
 ```
 
 ---
@@ -165,10 +183,10 @@ service/                        # Backend (Cloudflare Workers + Hono)
 # Architecture
 
 ```text
-React (client/)
+React (browser SPA)
 
 ├── Monaco Editor
-├── AI Chat Panel
+├── AI Chat Panel  ──────────────► AI Provider (bring-your-own-key, direct fetch)
 ├── Project Explorer
 ├── Wiring Playground (SVG Canvas)
 ├── Component Library
@@ -176,15 +194,9 @@ React (client/)
 ├── Device Inspector
 └── Simulation Web Worker
 
-↓ fetch()
+↓ @libsql/client (HTTP)  +  Drizzle ORM
 
-Cloudflare Worker (service/)
-
-├── Hono API
-├── Auth (sessions)
-├── Projects CRUD
-├── AI Proxy
-└── Turso (SQLite)
+Turso (libSQL / SQLite)
 ```
 
 ---
