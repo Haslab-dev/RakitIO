@@ -44,20 +44,28 @@ export const api = {
       request<{ id: string; email: string; name: string }>('/auth/me'),
   },
   projects: {
-    list: () =>
-      request<Array<{ id: string; name: string; description: string; updatedAt: string }>>('/projects'),
-    get: (id: string) =>
-      request<{ id: string; name: string; description: string; files: unknown[]; components: unknown[]; wires: unknown[]; settings: unknown }>(`/projects/${id}`),
-    create: (data: { name: string; description?: string; boardId?: string }) =>
-      request<{ id: string; name: string }>('/projects', {
+    list: async () => {
+      const res = await request<{ projects: Array<{ id: string; name: string; description: string; updatedAt: string }> }>('/projects');
+      return res.projects;
+    },
+    get: async (id: string) => {
+      const res = await request<{ project: { id: string; name: string; description: string; createdAt: string; updatedAt: string; version: number; data: { files: unknown[]; components: unknown[]; wires: unknown[]; settings: unknown } } }>(`/projects/${id}`);
+      return { ...res.project, ...res.project.data };
+    },
+    create: async (data: { name: string; description?: string; boardId?: string }) => {
+      const res = await request<{ project: { id: string; name: string } }>('/projects', {
         method: 'POST',
         body: JSON.stringify(data),
-      }),
-    update: (id: string, data: Record<string, unknown>) =>
-      request<{ id: string }>(`/projects/${id}`, {
-        method: 'PATCH',
+      });
+      return res.project;
+    },
+    update: async (id: string, data: Record<string, unknown>) => {
+      const res = await request<{ project: { id: string } }>(`/projects/${id}`, {
+        method: 'PUT',
         body: JSON.stringify(data),
-      }),
+      });
+      return res.project;
+    },
     delete: (id: string) =>
       request<void>(`/projects/${id}`, { method: 'DELETE' }),
   },

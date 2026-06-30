@@ -23,8 +23,7 @@ export default function ProjectExplorer() {
 
   const folders = new Map<string, typeof project.files>()
   for (const file of project.files) {
-    const parts = file.path.split('/')
-    const folder = parts.length > 1 ? parts.slice(0, -1).join('/') : ''
+    const folder = ''
     if (!folders.has(folder)) folders.set(folder, [])
     folders.get(folder)!.push(file)
   }
