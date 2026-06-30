@@ -125,7 +125,39 @@ bun typecheck    # Typecheck
 bun lint         # Lint with oxlint
 bun migrate      # Create/ensure DB schema
 bun seed         # Seed demo data
+bun deploy       # Build and deploy to Cloudflare Pages
+bun pages:dev    # Build and run locally via Wrangler Pages
 ```
+
+## Deployment (Cloudflare Pages)
+
+The build output in `dist/` is a fully static SPA deployed to Cloudflare Pages
+via Wrangler. `wrangler.toml` points Pages at `dist/`, and
+`public/_redirects` ensures client-side routes fall back to `index.html`.
+
+1. **Set build-time environment variables** in the Cloudflare Pages dashboard
+   (Settings → Environment variables) for both Production and Preview, or pass
+   them on deploy. These are baked into the static bundle:
+
+   ```env
+   VITE_TURSO_URL=libsql://<your-db>.turso.io
+   VITE_TURSO_AUTH_TOKEN=<your-token>
+   VITE_AI_BASE_URL=https://api.openai.com/v1
+   VITE_AI_API_KEY=
+   VITE_AI_MODEL=gpt-4o-mini
+   ```
+
+2. **Authenticate** once:
+   ```bash
+   npx wrangler login
+   ```
+
+3. **Deploy:**
+   ```bash
+   bun deploy
+   # or, with inline env vars for a one-off:
+   npx wrangler pages deploy dist --var VITE_TURSO_URL:... --var VITE_TURSO_AUTH_TOKEN:...
+   ```
 
 ## Supported Boards
 
