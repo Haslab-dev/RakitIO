@@ -1,4 +1,3 @@
-
 interface ServoProps {
   angle?: number;
   x: number;
@@ -9,97 +8,75 @@ interface ServoProps {
 export function Servo({ angle = 90, x, y, rotation = 0 }: ServoProps) {
   const clampedAngle = Math.max(0, Math.min(180, angle));
   const hornAngle = -90 + clampedAngle;
-  const bodyW = 52;
-  const bodyH = 42;
+  const bodyW = 60;
+  const bodyH = 48;
+  const pivotY = 0; // Center the horn rotation at y = 0
 
   return (
     <g transform={`translate(${x}, ${y}) rotate(${rotation})`}>
-      {/* Wires */}
-      <line x1={-bodyW / 2 - 5} y1={8} x2={-bodyW / 2 - 25} y2={8} stroke="#8B4513" strokeWidth={2.5} strokeLinecap="round" />
-      <line x1={-bodyW / 2 - 5} y1={0} x2={-bodyW / 2 - 25} y2={0} stroke="#EF4444" strokeWidth={2.5} strokeLinecap="round" />
-      <line x1={-bodyW / 2 - 5} y1={-8} x2={-bodyW / 2 - 25} y2={-8} stroke="#F97316" strokeWidth={2.5} strokeLinecap="round" />
+      {/* 3 Flat Connecting Wires (Orange, Red, Brown) - Extending to -68 */}
+      <line x1={-bodyW / 2} y1={-13} x2={-68} y2={-13} stroke="#F59E0B" strokeWidth={3.5} strokeLinecap="round" />
+      <line x1={-bodyW / 2} y1={0} x2={-68} y2={0} stroke="#EF4444" strokeWidth={3.5} strokeLinecap="round" />
+      <line x1={-bodyW / 2} y1={13} x2={-68} y2={13} stroke="#78350F" strokeWidth={3.5} strokeLinecap="round" />
 
-      {/* Wire labels */}
-      <text x={-bodyW / 2 - 28} y={-6} textAnchor="end" fontSize={4} fill="#888">SIG</text>
-      <text x={-bodyW / 2 - 28} y={2} textAnchor="end" fontSize={4} fill="#888">VCC</text>
-      <text x={-bodyW / 2 - 28} y={10} textAnchor="end" fontSize={4} fill="#888">GND</text>
+      {/* Wire Labels */}
+      <text x={-40} y={-9} fontSize={5.5} fill="#F59E0B" fontFamily="monospace" fontWeight="bold">SIG</text>
+      <text x={-40} y={4} fontSize={5.5} fill="#EF4444" fontFamily="monospace" fontWeight="bold">VCC</text>
+      <text x={-40} y={17} fontSize={5.5} fill="#78350F" fontFamily="monospace" fontWeight="bold">GND</text>
 
-      {/* Mounting tab - left */}
-      <rect x={-bodyW / 2 - 8} y={-bodyH / 2 + 4} width={10} height={8} rx={1} fill="#3A3A5A" stroke="#2A2A4A" strokeWidth={0.8} />
-      <circle cx={-bodyW / 2 - 3} cy={-bodyH / 2 + 8} r={1.5} fill="#222" />
-
-      {/* Mounting tab - right */}
-      <rect x={bodyW / 2 - 2} y={-bodyH / 2 + 4} width={10} height={8} rx={1} fill="#3A3A5A" stroke="#2A2A4A" strokeWidth={0.8} />
-      <circle cx={bodyW / 2 + 3} cy={-bodyH / 2 + 8} r={1.5} fill="#222" />
-
-      {/* Servo body */}
+      {/* Servo Body (Flat Blue Box) */}
       <rect
         x={-bodyW / 2}
         y={-bodyH / 2}
         width={bodyW}
         height={bodyH}
-        rx={3}
-        fill="#4A4A6A"
-        stroke="#3A3A5A"
-        strokeWidth={1.5}
+        rx={4}
+        fill="#2563EB"
+        stroke="#1D4ED8"
+        strokeWidth={2}
       />
-
-      {/* Top section (darker) */}
-      <rect
-        x={-bodyW / 2}
-        y={-bodyH / 2}
-        width={bodyW}
-        height={bodyH * 0.4}
-        rx={3}
-        fill="#3A3A5A"
-      />
-
-      {/* Bottom section (lighter) */}
+      {/* Top Cap Accent */}
       <rect
         x={-bodyW / 2 + 2}
-        y={-bodyH / 2 + bodyH * 0.4}
+        y={-bodyH / 2 + 2}
         width={bodyW - 4}
-        height={bodyH * 0.6 - 2}
-        rx={1}
-        fill="#5A5A7A"
-        opacity={0.5}
+        height={8}
+        rx={2}
+        fill="#1D4ED8"
       />
 
-      {/* Label */}
-      <text x={0} y={8} textAnchor="middle" fontSize={7} fill="#B0B0CC" fontFamily="monospace" fontWeight="bold">
-        SG90
-      </text>
-      <text x={0} y={16} textAnchor="middle" fontSize={5} fill="#808099" fontFamily="monospace">
-        SERVO
-      </text>
+      {/* Text Labels */}
+      <text x={12} y={1} textAnchor="middle" fontSize={8} fill="#FFFFFF" fontFamily="monospace" fontWeight="bold">SG90</text>
+      <text x={12} y={10} textAnchor="middle" fontSize={5.5} fill="#93C5FD" fontFamily="monospace">SERVO</text>
 
-      {/* Horn mounting circle */}
-      <circle cx={0} cy={-bodyH / 2 - 6} r={10} fill="#555" stroke="#444" strokeWidth={1} />
+      {/* Horn Gear Base */}
+      <circle cx={-12} cy={pivotY} r={10} fill="#1D4ED8" stroke="#1E40AF" strokeWidth={1.5} />
 
-      {/* Horn shaft */}
-      <circle cx={0} cy={-bodyH / 2 - 6} r={3} fill="#888" stroke="#777" strokeWidth={0.5} />
+      {/* Rotating Horn Assembly (Only this rotates!) */}
+      <g
+        style={{
+          transform: `rotate(${hornAngle}deg)`,
+          transformOrigin: `-12px ${pivotY}px`,
+          transition: 'transform 0.18s cubic-bezier(0.25, 0.8, 0.25, 1)',
+        }}
+      >
+        {/* White plastic horn arm */}
+        <path
+          d="M -12,-4 L 18,-2 A 4,4 0 0,1 18,2 L -12,4 Z"
+          fill="#F3F4F6"
+          stroke="#D1D5DB"
+          strokeWidth={1.2}
+        />
+        <circle cx={-12} cy={pivotY} r={6} fill="#FFF" stroke="#D1D5DB" strokeWidth={1.2} />
+        {/* Position indicator dots on horn */}
+        <circle cx={4} cy={pivotY} r={1} fill="#9CA3AF" />
+        <circle cx={11} cy={pivotY} r={1} fill="#9CA3AF" />
+        {/* Center screw */}
+        <circle cx={-12} cy={pivotY} r={2} fill="#4B5563" />
+      </g>
 
-      {/* Horn arm */}
-      <line
-        x1={0}
-        y1={-bodyH / 2 - 6}
-        x2={18 * Math.cos((hornAngle * Math.PI) / 180)}
-        y2={-bodyH / 2 - 6 + 18 * Math.sin((hornAngle * Math.PI) / 180)}
-        stroke="#AAA"
-        strokeWidth={3}
-        strokeLinecap="round"
-      />
-
-      {/* Horn tip */}
-      <circle
-        cx={18 * Math.cos((hornAngle * Math.PI) / 180)}
-        cy={-bodyH / 2 - 6 + 18 * Math.sin((hornAngle * Math.PI) / 180)}
-        r={2}
-        fill="#CCC"
-      />
-
-      {/* Angle label */}
-      <text x={0} y={bodyH / 2 + 14} textAnchor="middle" fontSize={6} fill="#888" fontFamily="monospace">
+      {/* Angle Readout */}
+      <text x={10} y={15} textAnchor="middle" fontSize={5.5} fill="#F3F4F6" fontFamily="monospace">
         {clampedAngle}°
       </text>
     </g>

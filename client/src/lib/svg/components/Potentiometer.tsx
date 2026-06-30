@@ -1,4 +1,3 @@
-
 interface PotentiometerProps {
   position?: number;
   x: number;
@@ -8,78 +7,46 @@ interface PotentiometerProps {
 
 export function Potentiometer({ position = 0.5, x, y, rotation = 0 }: PotentiometerProps) {
   const clampedPos = Math.max(0, Math.min(1, position));
+  // Map 0.0-1.0 to -135deg to +135deg
   const angle = -135 + clampedPos * 270;
-  const bodyR = 20;
+  const bodyR = 24;
 
   return (
     <g transform={`translate(${x}, ${y}) rotate(${rotation})`}>
-      {/* 3 pins */}
-      <rect x={-10} y={bodyR + 4} width={4} height={8} rx={0.5} fill="#C0C0C0" stroke="#999" strokeWidth={0.3} />
-      <rect x={-2} y={bodyR + 4} width={4} height={8} rx={0.5} fill="#C0C0C0" stroke="#999" strokeWidth={0.3} />
-      <rect x={6} y={bodyR + 4} width={4} height={8} rx={0.5} fill="#C0C0C0" stroke="#999" strokeWidth={0.3} />
+      {/* 3 Metal Lead Pins */}
+      <line x1={-12} y1={29} x2={-12} y2={14} stroke="#9CA3AF" strokeWidth={2} strokeLinecap="round" />
+      <line x1={0} y1={29} x2={0} y2={14} stroke="#9CA3AF" strokeWidth={2} strokeLinecap="round" />
+      <line x1={12} y1={29} x2={12} y2={14} stroke="#9CA3AF" strokeWidth={2} strokeLinecap="round" />
 
-      {/* Pin labels */}
-      <text x={-8} y={bodyR + 20} textAnchor="middle" fontSize={4} fill="#888">1</text>
-      <text x={0} y={bodyR + 20} textAnchor="middle" fontSize={4} fill="#888">W</text>
-      <text x={8} y={bodyR + 20} textAnchor="middle" fontSize={4} fill="#888">2</text>
+      {/* Outer Dial Base (Flat Dark grey) */}
+      <circle cx={0} cy={0} r={bodyR} fill="#374151" stroke="#4B5563" strokeWidth={2} />
 
-      {/* Body base */}
-      <circle cx={0} cy={0} r={bodyR + 2} fill="#555" stroke="#444" strokeWidth={1} />
-
-      {/* Body */}
-      <circle cx={0} cy={0} r={bodyR} fill="#3A3A3A" stroke="#333" strokeWidth={1} />
-
-      {/* Resistance track arc */}
+      {/* Resistance Arc Indicator */}
       <path
-        d={`M ${bodyR * 0.6 * Math.cos((-135 * Math.PI) / 180)} ${bodyR * 0.6 * Math.sin((-135 * Math.PI) / 180)} A ${bodyR * 0.6} ${bodyR * 0.6} 0 1 1 ${bodyR * 0.6 * Math.cos((135 * Math.PI) / 180)} ${bodyR * 0.6 * Math.sin((135 * Math.PI) / 180)}`}
+        d="M -15,15 A 20,20 0 1,1 15,15"
         fill="none"
-        stroke="#666"
+        stroke="#4B5563"
         strokeWidth={2}
         strokeLinecap="round"
+        opacity={0.7}
       />
 
-      {/* Knurled knob edge */}
-      {Array.from({ length: 24 }, (_, i) => {
-        const a = (i * 15 * Math.PI) / 180;
-        return (
-          <line
-            key={i}
-            x1={(bodyR - 1) * Math.cos(a)}
-            y1={(bodyR - 1) * Math.sin(a)}
-            x2={(bodyR + 1) * Math.cos(a)}
-            y2={(bodyR + 1) * Math.sin(a)}
-            stroke="#555"
-            strokeWidth={0.8}
-          />
-        );
-      })}
+      {/* Rotating Inner Knob (Rotates based on angle) */}
+      <g transform={`rotate(${angle})`}>
+        {/* Knob face */}
+        <circle cx={0} cy={0} r={16} fill="#1F2937" stroke="#4B5563" strokeWidth={1.5} />
+        {/* Position line */}
+        <line x1={0} y1={0} x2={0} y2={-14} stroke="#EF4444" strokeWidth={2.5} strokeLinecap="round" />
+      </g>
 
-      {/* Center shaft */}
-      <circle cx={0} cy={0} r={4} fill="#666" stroke="#555" strokeWidth={0.5} />
+      {/* Angle scale markings */}
+      <text x={-19} y={20} fontSize={5.5} fill="#9CA3AF" fontFamily="monospace" textAnchor="middle">0%</text>
+      <text x={19} y={20} fontSize={5.5} fill="#9CA3AF" fontFamily="monospace" textAnchor="middle">100%</text>
 
-      {/* Position indicator (pointer) */}
-      <line
-        x1={0}
-        y1={0}
-        x2={bodyR * 0.7 * Math.cos((angle * Math.PI) / 180)}
-        y2={bodyR * 0.7 * Math.sin((angle * Math.PI) / 180)}
-        stroke="#E5E7EB"
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-
-      {/* Position dot */}
-      <circle
-        cx={bodyR * 0.7 * Math.cos((angle * Math.PI) / 180)}
-        cy={bodyR * 0.7 * Math.sin((angle * Math.PI) / 180)}
-        r={2}
-        fill="#E5E7EB"
-      />
-
-      {/* Label */}
-      <text x={0} y={-bodyR - 6} textAnchor="middle" fontSize={5} fill="#888" fontFamily="monospace">
-        POT
-      </text>
+      {/* Pin identification text */}
+      <text x={-12} y={26} fontSize={5} fill="#9CA3AF" fontFamily="monospace" textAnchor="middle" fontWeight="bold">V</text>
+      <text x={0} y={26} fontSize={5} fill="#9CA3AF" fontFamily="monospace" textAnchor="middle" fontWeight="bold">W</text>
+      <text x={12} y={26} fontSize={5} fill="#9CA3AF" fontFamily="monospace" textAnchor="middle" fontWeight="bold">G</text>
     </g>
   );
 }

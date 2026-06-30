@@ -6,6 +6,9 @@ interface WireRendererProps {
   selected?: boolean;
   onClick?: () => void;
   strokeWidth?: number;
+  glow?: boolean;
+  dashed?: boolean;
+  flashing?: boolean;
 }
 
 function buildBezierPath(points: WirePoint[]): string {
@@ -70,36 +73,101 @@ export function WireRenderer({
   color = '#22C55E',
   selected = false,
   onClick,
-  strokeWidth = 3,
+  strokeWidth = 3.5,
+  glow = false,
+  dashed = false,
+  flashing = false,
 }: WireRendererProps) {
   const path = buildBezierPath(points);
   if (!path) return null;
+
+  const colorClean = color.replace('#', '');
 
   return (
     <g
       onClick={onClick}
       style={{ cursor: onClick ? 'pointer' : 'default' }}
     >
+      {/* Dynamic CSS Injection for Animations */}
+      {dashed && (
+        <style>{`
+          @keyframes wireDash {
+            to { stroke-dashoffset: -20; }
+          }
+          .wire-dashed-${colorClean} {
+            stroke-dasharray: 6, 4;
+            animation: wireDash 1s linear infinite;
+          }
+        `}</style>
+      )}
+      {flashing && (
+        <style>{`
+          @keyframes wireFlash {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+          }
+          .wire-flashing-${colorClean} {
+            animation: wireFlash 0.4s ease-in-out infinite;
+          }
+        `}</style>
+      )}
+
+      {/* Wire Drop Shadow (Creates 3D Depth) */}
+      <path
+        d={path}
+        fill="none"
+        stroke="#000000"
+        strokeWidth={strokeWidth}
+        opacity={0.12}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        transform="translate(0, 1.2)"
+        pointerEvents="none"
+      />
+
+      {/* Glow Underlay */}
+      {glow && (
+        <path
+          d={path}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth + 6}
+          opacity={0.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={flashing ? `wire-flashing-${colorClean}` : ''}
+        />
+      )}
+
+      {/* Hover Target Area */}
       <path
         d={path}
         fill="none"
         stroke={color}
-        strokeWidth={strokeWidth + 4}
+        strokeWidth={strokeWidth + 6}
         strokeOpacity={0}
       />
+
+      {/* Main Wire Path */}
       <path
         d={path}
         fill="none"
         stroke={selected ? '#FBBF24' : color}
-        strokeWidth={selected ? strokeWidth + 2 : strokeWidth}
+        strokeWidth={selected ? strokeWidth + 1.5 : strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity={selected ? 1 : 0.85}
+        opacity={selected ? 1 : 0.9}
+        className={[
+          dashed ? `wire-dashed-${colorClean}` : '',
+          flashing ? `wire-flashing-${colorClean}` : '',
+        ].filter(Boolean).join(' ')}
       />
+
+      {/* Wire Connection Terminals */}
       {points.length > 0 && (
         <>
-          <circle cx={points[0].x} cy={points[0].y} r={3} fill={color} />
-          <circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r={3} fill={color} />
+          <circle cx={points[0].x} cy={points[0].y} r={2.8} fill="#FFFFFF" stroke={color} strokeWidth={1} />
+          <circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r={2.8} fill="#FFFFFF" stroke={color} strokeWidth={1} />
         </>
       )}
     </g>

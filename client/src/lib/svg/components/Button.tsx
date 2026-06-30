@@ -1,4 +1,3 @@
-
 interface ButtonProps {
   pressed?: boolean;
   x: number;
@@ -7,69 +6,43 @@ interface ButtonProps {
 }
 
 export function Button({ pressed = false, x, y, rotation = 0 }: ButtonProps) {
-  const bodyW = 24;
-  const bodyH = 24;
-  const capOffset = pressed ? 1 : 0;
-
+  const bodySize = 32;
+  
   return (
     <g transform={`translate(${x}, ${y}) rotate(${rotation})`}>
-      {/* 4 pins */}
-      <rect x={-16} y={-8} width={6} height={4} rx={0.5} fill="#C0C0C0" stroke="#999" strokeWidth={0.3} />
-      <rect x={10} y={-8} width={6} height={4} rx={0.5} fill="#C0C0C0" stroke="#999" strokeWidth={0.3} />
-      <rect x={-16} y={4} width={6} height={4} rx={0.5} fill="#C0C0C0" stroke="#999" strokeWidth={0.3} />
-      <rect x={10} y={4} width={6} height={4} rx={0.5} fill="#C0C0C0" stroke="#999" strokeWidth={0.3} />
+      {/* Left/Right Metal Leads */}
+      <line x1={-18} y1={0} x2={-14} y2={0} stroke="#9CA3AF" strokeWidth={2.5} strokeLinecap="round" />
+      <line x1={18} y1={0} x2={14} y2={0} stroke="#9CA3AF" strokeWidth={2.5} strokeLinecap="round" />
 
-      {/* Pin leads */}
-      <line x1={-13} y1={-4} x2={-8} y2={-4} stroke="#999" strokeWidth={1} />
-      <line x1={13} y1={-4} x2={8} y2={-4} stroke="#999" strokeWidth={1} />
-      <line x1={-13} y1={8} x2={-8} y2={8} stroke="#999" strokeWidth={1} />
-      <line x1={13} y1={8} x2={8} y2={8} stroke="#999" strokeWidth={1} />
-
-      {/* Button body */}
+      {/* Button Base (Flat Dark Grey Square) */}
       <rect
-        x={-bodyW / 2}
-        y={-bodyH / 2}
-        width={bodyW}
-        height={bodyH}
-        rx={2}
-        fill="#444"
-        stroke="#333"
-        strokeWidth={1}
+        x={-bodySize / 2}
+        y={-bodySize / 2}
+        width={bodySize}
+        height={bodySize}
+        rx={4}
+        fill="#374151"
+        stroke="#4B5563"
+        strokeWidth={2}
       />
 
-      {/* Internal contacts */}
-      <circle cx={-4} cy={-3} r={2} fill="#C0C0C0" opacity={0.4} />
-      <circle cx={4} cy={-3} r={2} fill="#C0C0C0" opacity={0.4} />
-      <circle cx={-4} cy={3} r={2} fill="#C0C0C0" opacity={0.4} />
-      <circle cx={4} cy={3} r={2} fill="#C0C0C0" opacity={0.4} />
+      {/* Inner Ring */}
+      <circle cx={0} cy={0} r={11} fill="none" stroke="#4B5563" strokeWidth={1.2} opacity={0.6} />
 
-      {/* Button cap */}
-      <rect
-        x={-bodyW / 2 + 2}
-        y={-bodyH / 2 + 2 + capOffset}
-        width={bodyW - 4}
-        height={bodyH - 4}
-        rx={3}
-        fill={pressed ? '#888' : '#666'}
-        stroke="#555"
-        strokeWidth={0.5}
+      {/* Button Plunger Cap (Circular, shrinks and darkens on press) */}
+      <circle
+        cx={0}
+        cy={0}
+        r={pressed ? 7.5 : 9}
+        fill={pressed ? '#1F2937' : '#EF4444'}
+        stroke={pressed ? '#EF4444' : '#DC2626'}
+        strokeWidth={1.5}
+        style={{ transition: 'all 0.08s ease' }}
       />
 
-      {/* Cap highlight */}
-      <rect
-        x={-bodyW / 2 + 4}
-        y={-bodyH / 2 + 3 + capOffset}
-        width={bodyW - 8}
-        height={4}
-        rx={1}
-        fill="white"
-        opacity={pressed ? 0.1 : 0.15}
-      />
-
-      {/* Click indicator when pressed */}
-      {pressed && (
-        <text x={0} y={1} textAnchor="middle" fontSize={6} fill="#FFF" opacity={0.5}>●</text>
-      )}
+      {/* Pin Numbers */}
+      <text x={-15} y={-7} fontSize={6} fill="#9CA3AF" fontFamily="monospace" fontWeight="bold">1</text>
+      <text x={11} y={-7} fontSize={6} fill="#9CA3AF" fontFamily="monospace" fontWeight="bold">2</text>
     </g>
   );
 }

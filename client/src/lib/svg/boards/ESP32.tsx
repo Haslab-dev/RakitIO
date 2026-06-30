@@ -1,5 +1,6 @@
 import type { PinDefinition } from '../../types';
 import { PinRenderer } from '../PinRenderer';
+import { useSimulationStore } from '../../../lib/stores';
 
 interface ESP32DevKitProps {
   pins: PinDefinition[];
@@ -10,6 +11,18 @@ interface ESP32DevKitProps {
 export function ESP32DevKit({ pins, onPinClick, selectedPins = [] }: ESP32DevKitProps) {
   const boardW = 400;
   const boardH = 580;
+
+  const simState = useSimulationStore((s) => s.state);
+  const simSnapshot = useSimulationStore((s) => s.snapshot);
+
+  // Find pin GPIO2 value in simulation snapshot (ESP32 built-in LED is on GPIO 2)
+  const pin2Val = (simSnapshot as any)?.nets
+    ?.flatMap((n: any) => n.pins)
+    .find((p: any) => p.componentId === 'board' && (p.pinId === 'GPIO2' || p.pinId === '2' || p.pinId === 'D2'))
+    ?.value ?? 0;
+
+  const isPowerOn = simState === 'running';
+  const isBuiltInLEDOn = pin2Val > 1.5;
 
   const renderPin = (pin: PinDefinition) => (
     <PinRenderer
@@ -94,11 +107,45 @@ export function ESP32DevKit({ pins, onPinClick, selectedPins = [] }: ESP32DevKit
       <text x={boardW / 2 + 76} y={140} textAnchor="middle" fontSize={5} fill="#8B9DAF">BOOT</text>
 
       {/* Power LED */}
-      <circle cx={boardW / 2 - 80} cy={100} r={3} fill="#EF4444" opacity={0.9} />
+      <circle 
+        cx={boardW / 2 - 80} 
+        cy={100} 
+        r={3} 
+        fill={isPowerOn ? '#EF4444' : '#6B1D1D'} 
+        style={{ transition: 'fill 0.2s ease' }} 
+      />
+      {isPowerOn && (
+        <circle 
+          cx={boardW / 2 - 80} 
+          cy={100} 
+          r={5} 
+          fill="none" 
+          stroke="#EF4444" 
+          strokeWidth={0.8} 
+          opacity={0.5} 
+        />
+      )}
       <text x={boardW / 2 - 80} y={112} textAnchor="middle" fontSize={5} fill="#8B9DAF">PWR</text>
 
       {/* Built-in LED */}
-      <circle cx={boardW / 2 - 80} cy={130} r={3} fill="#22C55E" opacity={0.9} />
+      <circle 
+        cx={boardW / 2 - 80} 
+        cy={130} 
+        r={3} 
+        fill={isBuiltInLEDOn ? '#3B82F6' : '#1D3B6B'} 
+        style={{ transition: 'fill 0.1s ease' }} 
+      />
+      {isBuiltInLEDOn && (
+        <circle 
+          cx={boardW / 2 - 80} 
+          cy={130} 
+          r={6} 
+          fill="none" 
+          stroke="#3B82F6" 
+          strokeWidth={0.8} 
+          opacity={0.6} 
+        />
+      )}
       <text x={boardW / 2 - 80} y={142} textAnchor="middle" fontSize={5} fill="#8B9DAF">LED</text>
 
       {/* Voltage regulator */}
@@ -117,16 +164,16 @@ export function ESP32DevKit({ pins, onPinClick, selectedPins = [] }: ESP32DevKit
         30 Pin / DOIT
       </text>
 
-      {/* Left side silkscreen labels */}
-      {['3V3', 'EN', 'SVP', 'SVN', '34', '35', '32', '33', '25', '26', '27', '14', '12', 'GND', '13', 'D2', 'D3', 'CMD', 'CLK', 'D0', 'D1'].map((label, i) => (
-        <text key={`lbl-${i}`} x={55} y={210 + i * 17} textAnchor="end" fontSize={6} fill="#5B7A8F" fontFamily="monospace">
+      {/* Left side silkscreen labels (15 pins) */}
+      {['3V3', 'EN', 'SVP', 'SVN', '34', '35', '32', '33', '25', '26', '27', '14', '12', 'GND', '13'].map((label, i) => (
+        <text key={`lbl-${i}`} x={48} y={208 + i * 17} textAnchor="end" fontSize={6} fill="#A2D2FF" opacity={0.8} fontFamily="monospace" fontWeight="bold">
           {label}
         </text>
       ))}
 
-      {/* Right side silkscreen labels */}
-      {['VIN', 'GND', '15', '2', '4', '16', '17', '5', '18', '19', '21', 'RX', 'TX', '22', '23', 'GND', '233', '232', '231', '230', 'GND'].map((label, i) => (
-        <text key={`rrl-${i}`} x={boardW - 55} y={210 + i * 17} textAnchor="start" fontSize={6} fill="#5B7A8F" fontFamily="monospace">
+      {/* Right side silkscreen labels (15 pins) */}
+      {['VIN', 'GND', '15', '2', '4', '16', '17', '5', '18', '19', '21', 'RX', 'TX', '22', '23'].map((label, i) => (
+        <text key={`rrl-${i}`} x={boardW - 48} y={208 + i * 17} textAnchor="start" fontSize={6} fill="#A2D2FF" opacity={0.8} fontFamily="monospace" fontWeight="bold">
           {label}
         </text>
       ))}

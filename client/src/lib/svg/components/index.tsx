@@ -4,6 +4,7 @@ export { Resistor } from './Resistor';
 export { Potentiometer } from './Potentiometer';
 export { Servo } from './Servo';
 export { OLED } from './OLED';
+export { LCD16x2 } from './LCD16x2';
 export { DHT22 } from './DHT22';
 export { BME280 } from './BME280';
 
@@ -13,6 +14,7 @@ import { Resistor } from './Resistor';
 import { Potentiometer } from './Potentiometer';
 import { Servo } from './Servo';
 import { OLED } from './OLED';
+import { LCD16x2 } from './LCD16x2';
 import { DHT22 } from './DHT22';
 import { BME280 } from './BME280';
 
@@ -51,8 +53,11 @@ export function ComponentRenderer({
     case 'oled':
     case 'ssd1306':
       return <OLED x={x} y={y} rotation={rotation} text={props.text} />;
+    case 'lcd16x2':
+      return <LCD16x2 x={x} y={y} rotation={rotation} text={props.text} />;
     case 'dht22':
     case 'am2302':
+    case 'dht11':
       return <DHT22 x={x} y={y} rotation={rotation} />;
     case 'bme280':
       return <BME280 x={x} y={y} rotation={rotation} />;
