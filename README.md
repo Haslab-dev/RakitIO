@@ -16,6 +16,21 @@ AI-native **client-only** browser platform for designing, programming, wiring, s
 > application layer only (queries filter by `userId`). Use a token with minimal
 > permissions. See `spec/RFC0001` for the full tradeoff analysis.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td width="33.33%" align="center"><b>Landing</b></td>
+    <td width="33.33%" align="center"><b>LED Blink</b></td>
+    <td width="33.33%" align="center"><b>Servo Sweep</b></td>
+  </tr>
+  <tr>
+    <td width="33.33%"><img src="landing.png" alt="Landing page"></td>
+    <td width="33.33%"><img src="demo-led.png" alt="LED blink simulation"></td>
+    <td width="33.33%"><img src="demo-servo.png" alt="Servo sweep simulation"></td>
+  </tr>
+</table>
+
 ## Project Structure
 
 ```
