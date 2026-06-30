@@ -4,6 +4,7 @@ import { createDb } from './db';
 import auth from './routes/auth';
 import projectsRoutes from './routes/projects';
 import ai from './routes/ai';
+import providersRoutes from './routes/providers';
 import type { Database } from './db';
 
 type AppEnv = {
@@ -52,6 +53,7 @@ app.get('/', (c) => {
 app.route('/auth', auth);
 app.route('/projects', projectsRoutes);
 app.route('/ai', ai);
+app.route('/providers', providersRoutes);
 
 app.notFound((c) => {
   return c.json({ error: 'Not found' }, 404);

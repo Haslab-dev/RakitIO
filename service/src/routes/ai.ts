@@ -1,5 +1,7 @@
 import { Hono } from 'hono';
+import { eq, and } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth';
+import { aiProviders } from '../db/schema';
 import type { Database } from '../db';
 
 type AIEnv = {
@@ -10,20 +12,25 @@ type AIEnv = {
   };
   Variables: {
     db: Database;
-    user: {
-      id: string;
-      email: string;
-      name: string;
-      avatarUrl: string | null;
-      createdAt: string;
-      updatedAt: string;
-    };
+    user: { id: string; email: string; name: string; avatarUrl: string | null; createdAt: string; updatedAt: string };
   };
 };
 
 const ai = new Hono<AIEnv>();
 
 ai.use('/*', authMiddleware);
+
+async function getActiveProvider(db: Database, userId: string, env: AIEnv['Bindings']) {
+  const [active] = await db.select().from(aiProviders).where(
+    and(eq(aiProviders.userId, userId), eq(aiProviders.isActive, true))
+  );
+
+  if (active) {
+    return { baseUrl: active.baseUrl, apiKey: active.apiKey, model: active.model, provider: active.provider };
+  }
+
+  return { baseUrl: env.AI_BASE_URL, apiKey: env.AI_API_KEY, model: env.AI_MODEL, provider: 'openai' };
+}
 
 async function callAI(
   baseUrl: string,
@@ -32,17 +39,14 @@ async function callAI(
   messages: Array<{ role: string; content: string }>,
   maxTokens = 4096,
 ): Promise<string> {
-  const response = await fetch(`${baseUrl}/chat/completions`, {
+  const url = baseUrl.endsWith('/chat/completions') ? baseUrl : `${baseUrl}/chat/completions`;
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      messages,
-      max_tokens: maxTokens,
-    }),
+    body: JSON.stringify({ model, messages, max_tokens: maxTokens }),
   });
 
   if (!response.ok) {
@@ -55,24 +59,16 @@ async function callAI(
 }
 
 ai.post('/chat', async (c) => {
-  const body = await c.req.json<{
-    messages: Array<{ role: string; content: string }>;
-    maxTokens?: number;
-  }>();
+  const body = await c.req.json<{ messages: Array<{ role: string; content: string }>; maxTokens?: number }>();
 
   if (!body.messages || body.messages.length === 0) {
     return c.json({ error: 'messages array is required' }, 400);
   }
 
   try {
-    const content = await callAI(
-      c.env.AI_BASE_URL,
-      c.env.AI_API_KEY,
-      c.env.AI_MODEL,
-      body.messages,
-      body.maxTokens,
-    );
-
+    const user = c.get('user');
+    const config = await getActiveProvider(c.get('db'), user.id, c.env);
+    const content = await callAI(config.baseUrl, config.apiKey, config.model, body.messages, body.maxTokens);
     return c.json({ content });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown AI error';
@@ -81,10 +77,7 @@ ai.post('/chat', async (c) => {
 });
 
 ai.post('/generate', async (c) => {
-  const body = await c.req.json<{
-    description: string;
-    boardId?: string;
-  }>();
+  const body = await c.req.json<{ description: string; boardId?: string }>();
 
   if (!body.description) {
     return c.json({ error: 'description is required' }, 400);
@@ -133,15 +126,12 @@ Return a JSON object with this structure:
 Return ONLY valid JSON, no markdown fences.`;
 
   try {
-    const content = await callAI(
-      c.env.AI_BASE_URL,
-      c.env.AI_API_KEY,
-      c.env.AI_MODEL,
-      [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: body.description },
-      ],
-    );
+    const user = c.get('user');
+    const config = await getActiveProvider(c.get('db'), user.id, c.env);
+    const content = await callAI(config.baseUrl, config.apiKey, config.model, [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: body.description },
+    ]);
 
     let parsed: unknown;
     try {
@@ -159,10 +149,7 @@ Return ONLY valid JSON, no markdown fences.`;
 });
 
 ai.post('/explain', async (c) => {
-  const body = await c.req.json<{
-    code: string;
-    language?: string;
-  }>();
+  const body = await c.req.json<{ code: string; language?: string }>();
 
   if (!body.code) {
     return c.json({ error: 'code is required' }, 400);
@@ -178,15 +165,12 @@ Cover:
 Format your response in markdown.`;
 
   try {
-    const content = await callAI(
-      c.env.AI_BASE_URL,
-      c.env.AI_API_KEY,
-      c.env.AI_MODEL,
-      [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: body.code },
-      ],
-    );
+    const user = c.get('user');
+    const config = await getActiveProvider(c.get('db'), user.id, c.env);
+    const content = await callAI(config.baseUrl, config.apiKey, config.model, [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: body.code },
+    ]);
 
     return c.json({ explanation: content });
   } catch (err) {
@@ -197,18 +181,8 @@ Format your response in markdown.`;
 
 ai.post('/fix-wiring', async (c) => {
   const body = await c.req.json<{
-    components: Array<{
-      id: string;
-      definitionId: string;
-      properties: Record<string, unknown>;
-    }>;
-    wires: Array<{
-      sourceComponentId: string;
-      sourcePinId: string;
-      targetComponentId: string;
-      targetPinId: string;
-      color: string;
-    }>;
+    components: Array<{ id: string; definitionId: string; properties: Record<string, unknown> }>;
+    wires: Array<{ sourceComponentId: string; sourcePinId: string; targetComponentId: string; targetPinId: string; color: string }>;
     boardId: string;
   }>();
 
@@ -220,7 +194,7 @@ ai.post('/fix-wiring', async (c) => {
 Common issues to check:
 - Missing ground connections
 - Missing power connections
-- Incorrect pin modes (e.g., analog pin used as digital)
+- Incorrect pin modes
 - Short circuits
 - Missing pull-up/pull-down resistors for buttons
 - LED without current-limiting resistor
@@ -234,22 +208,12 @@ Return a JSON object:
 Return ONLY valid JSON, no markdown fences.`;
 
   try {
-    const content = await callAI(
-      c.env.AI_BASE_URL,
-      c.env.AI_API_KEY,
-      c.env.AI_MODEL,
-      [
-        { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: JSON.stringify({
-            boardId: body.boardId,
-            components: body.components,
-            wires: body.wires,
-          }),
-        },
-      ],
-    );
+    const user = c.get('user');
+    const config = await getActiveProvider(c.get('db'), user.id, c.env);
+    const content = await callAI(config.baseUrl, config.apiKey, config.model, [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: JSON.stringify({ boardId: body.boardId, components: body.components, wires: body.wires }) },
+    ]);
 
     let parsed: unknown;
     try {

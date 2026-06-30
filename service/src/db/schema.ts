@@ -20,6 +20,21 @@ export const sessions = sqliteTable('sessions', {
   createdAt: text('created_at').notNull(),
 });
 
+export const aiProviders = sqliteTable('ai_providers', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  provider: text('provider').notNull(),
+  baseUrl: text('base_url').notNull(),
+  apiKey: text('api_key').notNull(),
+  model: text('model').notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
 export const projects = sqliteTable('projects', {
   id: text('id').primaryKey(),
   userId: text('user_id')
