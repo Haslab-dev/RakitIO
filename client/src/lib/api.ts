@@ -83,4 +83,22 @@ export const api = {
         body: JSON.stringify({ project }),
       }),
   },
+  providers: {
+    list: () =>
+      request<Array<{ id: string; name: string; provider: string; baseUrl: string; model: string; isActive: boolean }>>('/providers'),
+    create: (data: { name: string; provider: string; baseUrl: string; apiKey: string; model: string }) =>
+      request<{ id: string; name: string; isActive: boolean }>('/providers', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: { name?: string; provider?: string; baseUrl?: string; apiKey?: string; model?: string }) =>
+      request<{ id: string }>(`/providers/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      request<void>(`/providers/${id}`, { method: 'DELETE' }),
+    activate: (id: string) =>
+      request<{ id: string; isActive: boolean }>(`/providers/${id}/activate`, { method: 'POST' }),
+  },
 };

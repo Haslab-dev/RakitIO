@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type PanelTab = 'files' | 'components' | 'ai';
+export type PanelTab = 'files' | 'components' | 'ai' | 'ai-settings';
 export type BottomTab = 'serial' | 'output' | 'problems';
 
 interface SelectionInfo {

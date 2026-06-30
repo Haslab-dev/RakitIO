@@ -70,7 +70,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="flex-1" />
 
         <div className="flex items-center gap-1">
-          {(['files', 'components', 'ai'] as const).map((tab) => (
+          {(['files', 'components', 'ai', 'ai-settings'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActivePanel(tab)}
@@ -79,7 +79,7 @@ export default function Layout({ children }: LayoutProps) {
                   : 'text-text-secondary hover:text-text-primary'
                 }`}
             >
-              {tab}
+              {tab === 'ai-settings' ? 'AI ⚙' : tab}
             </button>
           ))}
           <div className="h-4 w-px bg-border mx-1" />

@@ -7,6 +7,7 @@ import MonacoEditor from '../components/MonacoEditor'
 import ProjectExplorer from '../components/ProjectExplorer'
 import ComponentLibrary from '../components/ComponentLibrary'
 import AIChat from '../components/AIChat'
+import AISettings from '../components/AISettings'
 import WiringPlayground from '../components/WiringPlayground'
 import SerialMonitor from '../components/SerialMonitor'
 import SimulationControls from '../components/SimulationControls'
@@ -80,6 +81,8 @@ export default function EditorPage() {
         return <ComponentLibrary />
       case 'ai':
         return <AIChat />
+      case 'ai-settings':
+        return <AISettings />
       default:
         return null
     }
