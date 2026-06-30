@@ -50,10 +50,13 @@ app.get('/', (c) => {
   });
 });
 
-app.route('/auth', auth);
-app.route('/projects', projectsRoutes);
-app.route('/ai', ai);
-app.route('/providers', providersRoutes);
+const api = new Hono<AppEnv>();
+api.route('/auth', auth);
+api.route('/projects', projectsRoutes);
+api.route('/ai', ai);
+api.route('/providers', providersRoutes);
+
+app.route('/api', api);
 
 app.notFound((c) => {
   return c.json({ error: 'Not found' }, 404);
