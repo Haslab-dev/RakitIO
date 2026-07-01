@@ -1,0 +1,39 @@
+{
+  "name": "OLED Display",
+  "description": "Display text on I2C OLED screen",
+  "boardId": "arduino-uno",
+  "components": [
+    {
+      "id": "oled-1",
+      "definitionId": "ssd1306",
+      "x": 400,
+      "y": 280,
+      "rotation": 0,
+      "label": "OLED"
+    }
+  ],
+  "wires": [
+    {
+      "from": { "componentId": "board", "pinId": "A4" },
+      "to": { "componentId": "oled-1", "pinId": "sda" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "A5" },
+      "to": { "componentId": "oled-1", "pinId": "scl" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "5V" },
+      "to": { "componentId": "oled-1", "pinId": "vcc" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "oled-1", "pinId": "gnd" }
+    }
+  ],
+  "settings": {
+    "boardId": "arduino-uno",
+    "clockSpeed": 16000000,
+    "voltage": 5,
+    "serialBaudRate": 9600
+  }
+}

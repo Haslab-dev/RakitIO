@@ -1,0 +1,31 @@
+{
+  "name": "Blink LED",
+  "description": "The simplest Arduino project - blink an LED",
+  "boardId": "arduino-uno",
+  "components": [
+    {
+      "id": "led-1",
+      "definitionId": "led",
+      "x": 400,
+      "y": 300,
+      "rotation": 0,
+      "label": "LED"
+    }
+  ],
+  "wires": [
+    {
+      "from": { "componentId": "board", "pinId": "D13" },
+      "to": { "componentId": "led-1", "pinId": "anode" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "led-1", "pinId": "cathode" }
+    }
+  ],
+  "settings": {
+    "boardId": "arduino-uno",
+    "clockSpeed": 16000000,
+    "voltage": 5,
+    "serialBaudRate": 9600
+  }
+}

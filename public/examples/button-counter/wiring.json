@@ -1,0 +1,47 @@
+{
+  "name": "Button Counter",
+  "description": "Count button presses and toggle LED",
+  "boardId": "arduino-uno",
+  "components": [
+    {
+      "id": "button-1",
+      "definitionId": "button",
+      "x": 300,
+      "y": 250,
+      "rotation": 0,
+      "label": "Button"
+    },
+    {
+      "id": "led-1",
+      "definitionId": "led",
+      "x": 500,
+      "y": 250,
+      "rotation": 0,
+      "label": "LED"
+    }
+  ],
+  "wires": [
+    {
+      "from": { "componentId": "board", "pinId": "D2" },
+      "to": { "componentId": "button-1", "pinId": "pin1" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "button-1", "pinId": "pin2" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "D13" },
+      "to": { "componentId": "led-1", "pinId": "anode" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "led-1", "pinId": "cathode" }
+    }
+  ],
+  "settings": {
+    "boardId": "arduino-uno",
+    "clockSpeed": 16000000,
+    "voltage": 5,
+    "serialBaudRate": 9600
+  }
+}

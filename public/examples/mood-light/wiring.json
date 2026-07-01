@@ -1,0 +1,59 @@
+{
+  "name": "Mood Light",
+  "description": "RGB LED color wheel controlled by potentiometer",
+  "boardId": "arduino-uno",
+  "components": [
+    {
+      "id": "rgbled-1",
+      "definitionId": "rgb-led",
+      "x": 450,
+      "y": 280,
+      "rotation": 0,
+      "label": "RGB LED"
+    },
+    {
+      "id": "pot-1",
+      "definitionId": "potentiometer",
+      "x": 280,
+      "y": 280,
+      "rotation": 0,
+      "label": "Pot"
+    }
+  ],
+  "wires": [
+    {
+      "from": { "componentId": "board", "pinId": "D9" },
+      "to": { "componentId": "rgbled-1", "pinId": "r" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "D10" },
+      "to": { "componentId": "rgbled-1", "pinId": "g" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "D11" },
+      "to": { "componentId": "rgbled-1", "pinId": "b" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "rgbled-1", "pinId": "gnd" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "5V" },
+      "to": { "componentId": "pot-1", "pinId": "vcc" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "A0" },
+      "to": { "componentId": "pot-1", "pinId": "wiper" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "pot-1", "pinId": "gnd" }
+    }
+  ],
+  "settings": {
+    "boardId": "arduino-uno",
+    "clockSpeed": 16000000,
+    "voltage": 5,
+    "serialBaudRate": 9600
+  }
+}

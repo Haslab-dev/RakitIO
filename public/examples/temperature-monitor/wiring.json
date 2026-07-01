@@ -1,0 +1,35 @@
+{
+  "name": "Temperature Monitor",
+  "description": "Read temperature and humidity from DHT sensor",
+  "boardId": "arduino-uno",
+  "components": [
+    {
+      "id": "dht-1",
+      "definitionId": "dht11",
+      "x": 400,
+      "y": 280,
+      "rotation": 0,
+      "label": "DHT11"
+    }
+  ],
+  "wires": [
+    {
+      "from": { "componentId": "board", "pinId": "5V" },
+      "to": { "componentId": "dht-1", "pinId": "vcc" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "D2" },
+      "to": { "componentId": "dht-1", "pinId": "data" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "dht-1", "pinId": "gnd" }
+    }
+  ],
+  "settings": {
+    "boardId": "arduino-uno",
+    "clockSpeed": 16000000,
+    "voltage": 5,
+    "serialBaudRate": 9600
+  }
+}

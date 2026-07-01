@@ -1,0 +1,31 @@
+{
+  "name": "Buzzer Melody",
+  "description": "Play a melody using a buzzer and tone()",
+  "boardId": "arduino-uno",
+  "components": [
+    {
+      "id": "buzzer-1",
+      "definitionId": "buzzer",
+      "x": 400,
+      "y": 280,
+      "rotation": 0,
+      "label": "Buzzer"
+    }
+  ],
+  "wires": [
+    {
+      "from": { "componentId": "board", "pinId": "D8" },
+      "to": { "componentId": "buzzer-1", "pinId": "positive" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "buzzer-1", "pinId": "negative" }
+    }
+  ],
+  "settings": {
+    "boardId": "arduino-uno",
+    "clockSpeed": 16000000,
+    "voltage": 5,
+    "serialBaudRate": 9600
+  }
+}

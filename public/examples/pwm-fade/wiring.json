@@ -1,0 +1,31 @@
+{
+  "name": "PWM Fade",
+  "description": "Fade an LED in and out using PWM",
+  "boardId": "arduino-uno",
+  "components": [
+    {
+      "id": "led-1",
+      "definitionId": "led",
+      "x": 400,
+      "y": 300,
+      "rotation": 0,
+      "label": "LED"
+    }
+  ],
+  "wires": [
+    {
+      "from": { "componentId": "board", "pinId": "D9" },
+      "to": { "componentId": "led-1", "pinId": "anode" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "led-1", "pinId": "cathode" }
+    }
+  ],
+  "settings": {
+    "boardId": "arduino-uno",
+    "clockSpeed": 16000000,
+    "voltage": 5,
+    "serialBaudRate": 9600
+  }
+}

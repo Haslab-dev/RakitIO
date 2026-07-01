@@ -1,0 +1,39 @@
+{
+  "name": "Distance Sensor",
+  "description": "Measure distance with HC-SR04 and color-coded LEDs",
+  "boardId": "arduino-uno",
+  "components": [
+    {
+      "id": "hcsr04-1",
+      "definitionId": "ultrasonic",
+      "x": 400,
+      "y": 280,
+      "rotation": 0,
+      "label": "HC-SR04"
+    }
+  ],
+  "wires": [
+    {
+      "from": { "componentId": "board", "pinId": "5V" },
+      "to": { "componentId": "hcsr04-1", "pinId": "vcc" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "D9" },
+      "to": { "componentId": "hcsr04-1", "pinId": "trig" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "D10" },
+      "to": { "componentId": "hcsr04-1", "pinId": "echo" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "hcsr04-1", "pinId": "gnd" }
+    }
+  ],
+  "settings": {
+    "boardId": "arduino-uno",
+    "clockSpeed": 16000000,
+    "voltage": 5,
+    "serialBaudRate": 9600
+  }
+}

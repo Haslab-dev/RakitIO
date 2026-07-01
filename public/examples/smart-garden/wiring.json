@@ -1,0 +1,96 @@
+{
+  "name": "Smart Garden",
+  "description": "Automated plant monitoring with soil sensor, light sensor, water level, and pump control",
+  "boardId": "arduino-uno",
+  "components": [
+    {
+      "id": "pot-1",
+      "definitionId": "potentiometer",
+      "x": 200,
+      "y": 200,
+      "rotation": 0,
+      "label": "Soil",
+      "properties": { "position": 0.3 }
+    },
+    {
+      "id": "led-1",
+      "definitionId": "led",
+      "x": 350,
+      "y": 200,
+      "rotation": 0,
+      "label": "Status"
+    },
+    {
+      "id": "hcsr04-1",
+      "definitionId": "ultrasonic",
+      "x": 500,
+      "y": 200,
+      "rotation": 0,
+      "label": "Water"
+    },
+    {
+      "id": "relay-1",
+      "definitionId": "relay",
+      "x": 650,
+      "y": 200,
+      "rotation": 0,
+      "label": "Pump"
+    }
+  ],
+  "wires": [
+    {
+      "from": { "componentId": "board", "pinId": "A0" },
+      "to": { "componentId": "pot-1", "pinId": "wiper" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "5V" },
+      "to": { "componentId": "pot-1", "pinId": "vcc" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "pot-1", "pinId": "gnd" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "A1" },
+      "to": { "componentId": "led-1", "pinId": "anode" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "led-1", "pinId": "cathode" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "5V" },
+      "to": { "componentId": "hcsr04-1", "pinId": "vcc" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "D9" },
+      "to": { "componentId": "hcsr04-1", "pinId": "trig" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "D10" },
+      "to": { "componentId": "hcsr04-1", "pinId": "echo" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "hcsr04-1", "pinId": "gnd" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "D7" },
+      "to": { "componentId": "relay-1", "pinId": "in" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "5V" },
+      "to": { "componentId": "relay-1", "pinId": "vcc" }
+    },
+    {
+      "from": { "componentId": "board", "pinId": "GND" },
+      "to": { "componentId": "relay-1", "pinId": "gnd" }
+    }
+  ],
+  "settings": {
+    "boardId": "arduino-uno",
+    "clockSpeed": 16000000,
+    "voltage": 5,
+    "serialBaudRate": 9600
+  }
+}
