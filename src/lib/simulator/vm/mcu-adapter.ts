@@ -173,4 +173,84 @@ export class VirtualMCUAdapter implements MCUAdapter {
     const dev = this.findDhtDevice();
     return dev?.humidity ?? 60.0;
   }
+
+  // --- Pulse Measurement ---
+
+  public pulseIn(pin: number, state: 'HIGH' | 'LOW' = 'HIGH', _timeout: number = 1000000): number {
+    const pinId = this.mapPin(pin);
+    const threshold = state === 'HIGH' ? 1.5 : 0.5;
+
+    // Find HC-SR04 or similar device connected to this pin
+    const devices = this.bus.getDevices();
+    for (const [_id, dev] of devices.entries()) {
+      const d = dev as any;
+      if (d.distance !== undefined && d.lastTrigTime !== undefined) {
+        if (d.lastTrigTime > 0 && d.distance > 0) {
+          // Return the measured pulse width based on distance
+          const pulseWidthUs = (d.distance * 2 / 0.034) * 1000;
+          return Math.round(pulseWidthUs);
+        }
+      }
+    }
+
+    // Fallback: simulate pulse based on current pin state
+    const pinData = this.netlist.getPin('board', pinId);
+    const currentValue = pinData?.value ?? 0;
+
+    if (currentValue >= threshold) {
+      // Pin is already in the requested state, return a simulated pulse width
+      // For simulation, return a fixed value representing a valid pulse
+      return 150; // 150 microseconds
+    }
+
+    return 0; // Timeout or no pulse detected
+  }
+
+  // --- Tone (Buzzer/Speaker) ---
+
+  private activeTones = new Map<number, number>();
+
+  public tone(pin: number, frequency: number = 440): void {
+    this.activeTones.set(pin, frequency);
+    // Trigger buzzer device if connected
+    const devices = this.bus.getDevices();
+    for (const [_id, dev] of devices.entries()) {
+      const d = dev as any;
+      if (d.frequency !== undefined) {
+        d.frequency = frequency;
+        d.active = true;
+      }
+    }
+  }
+
+  public noTone(pin: number): void {
+    this.activeTones.delete(pin);
+    // Stop buzzer device if connected
+    const devices = this.bus.getDevices();
+    for (const [_id, dev] of devices.entries()) {
+      const d = dev as any;
+      if (d.frequency !== undefined) {
+        d.active = false;
+      }
+    }
+  }
+
+  // --- Interrupts ---
+
+  private interruptHandlers = new Map<number, { mode: string; handler: () => void }>();
+
+  public attachInterrupt(pin: number, mode: string, handler: () => void): void {
+    this.interruptHandlers.set(pin, { mode, handler });
+  }
+
+  public detachInterrupt(pin: number): void {
+    this.interruptHandlers.delete(pin);
+  }
+
+  public triggerInterrupt(pin: number): void {
+    const handler = this.interruptHandlers.get(pin);
+    if (handler) {
+      handler.handler();
+    }
+  }
 }

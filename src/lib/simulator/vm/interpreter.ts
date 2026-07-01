@@ -18,18 +18,29 @@ export interface MCUAdapter {
   millis(): number;
   micros(): number;
   serialWrite(text: string): void;
-  
+
   // I2C
   wireBegin(): void;
   wireBeginTransmission(address: number): void;
   wireWrite(value: number): void;
-  wireEndTransmission(): number; // Returns ACK (0) or NACK (1-4)
+  wireEndTransmission(): number;
   wireRequestFrom(address: number, quantity: number): number;
   wireRead(): number;
 
   // DHT
   dhtReadTemperature(): number;
   dhtReadHumidity(): number;
+
+  // Pulse measurement
+  pulseIn(pin: number, state: 'HIGH' | 'LOW', timeout?: number): number;
+
+  // Tone (buzzer/speaker)
+  tone(pin: number, frequency: number): void;
+  noTone(pin: number): void;
+
+  // Interrupts
+  attachInterrupt(pin: number, mode: string, handler: () => void): void;
+  detachInterrupt(pin: number): void;
 }
 
 export class Interpreter {
@@ -383,7 +394,8 @@ export class Interpreter {
     }
     const builtins = [
       'pinMode', 'digitalWrite', 'digitalRead', 'analogWrite', 'analogRead',
-      'millis', 'micros', 'delay', 'delayMicroseconds',
+      'millis', 'micros', 'delay', 'delayMicroseconds', 'pulseIn', 'tone', 'noTone',
+      'attachInterrupt', 'detachInterrupt', 'digitalPinToInterrupt',
       'map', 'constrain', 'min', 'max', 'abs', 'random',
       'Serial.begin', 'Serial.print', 'Serial.println', 'Serial.write',
       'Wire.begin', 'Wire.beginTransmission', 'Wire.write', 'Wire.endTransmission', 'Wire.requestFrom', 'Wire.read',
@@ -493,6 +505,35 @@ export class Interpreter {
         return this.mcu.wireRequestFrom(args[0], args[1]);
       case 'Wire.read':
         return this.mcu.wireRead();
+      case 'pulseIn': {
+        const [pin, state, timeout] = args;
+        return this.mcu.pulseIn(pin, state || 'HIGH', timeout || 1000000);
+      }
+      case 'tone': {
+        const [pin, frequency] = args;
+        (this.mcu as any).tone?.(pin, frequency || 440);
+        break;
+      }
+      case 'noTone': {
+        const [pin] = args;
+        (this.mcu as any).noTone?.(pin);
+        break;
+      }
+      case 'attachInterrupt': {
+        const [pinOrHandler, modeOrPin, handler] = args;
+        if (typeof pinOrHandler === 'number') {
+          (this.mcu as any).attachInterrupt?.(pinOrHandler, modeOrPin, handler);
+        }
+        break;
+      }
+      case 'detachInterrupt': {
+        const [pin] = args;
+        (this.mcu as any).detachInterrupt?.(pin);
+        break;
+      }
+      case 'digitalPinToInterrupt': {
+        return args[0];
+      }
     }
     return undefined;
   }
