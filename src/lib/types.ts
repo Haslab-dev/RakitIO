@@ -123,12 +123,19 @@ export interface SimulationEvent {
 }
 
 export interface SimulationSnapshot {
-  timestamp: number;
-  pinStates: Record<string, Record<string, number>>;
-  componentStates: Record<string, Record<string, string | number | boolean>>;
-  serialBuffer: string;
-  cycleCount: number;
+  readonly timestamp: number;
+  readonly pinStates: Readonly<Record<string, Readonly<Record<string, number>>>>;
+  readonly componentStates: Readonly<Record<string, Readonly<Record<string, string | number | boolean>>>>;
+  readonly serialBuffer: string;
+  readonly cycleCount: number;
+  readonly variables?: Record<string, any>;
+  readonly callStack?: string[];
+  readonly currentLine?: number;
 }
+
+export type ImmutableSimulationSnapshot = {
+  readonly [K in keyof SimulationSnapshot]: SimulationSnapshot[K];
+};
 
 export interface SimulationConfig {
   speed: number;

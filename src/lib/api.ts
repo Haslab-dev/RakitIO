@@ -261,24 +261,66 @@ export const api = {
       };
     },
 
-    create: async (data: { name: string; description?: string; boardId?: string }) => {
+    create: async (data: {
+      name: string;
+      description?: string;
+      boardId?: string;
+      code?: string;
+      wiring?: string;
+    }) => {
       const userId = requireUserId();
       const now = new Date().toISOString();
       const id = generateId();
       const boardId = data.boardId || 'arduino-uno';
-      const payload = JSON.stringify({
+
+      let payload: Record<string, unknown> = {
         files: [],
         components: [],
         wires: [],
         settings: { boardId, clockSpeed: 16000000, voltage: 5, serialBaudRate: 9600 },
-      });
+      };
+
+      if (data.code || data.wiring) {
+        const files = [];
+        if (data.code) {
+          files.push({
+            id: generateId(),
+            name: 'sketch.ino',
+            path: '/sketch.ino',
+            content: data.code,
+            language: 'ino',
+            isOpen: true,
+            isDirty: false,
+          });
+        }
+
+        let wiringData: any = {};
+        if (data.wiring) {
+          try {
+            wiringData = JSON.parse(data.wiring);
+          } catch { /* ignore */ }
+        }
+
+        payload = {
+          files,
+          components: wiringData.components || [],
+          wires: wiringData.wires || [],
+          settings: {
+            boardId: wiringData.boardId || boardId,
+            clockSpeed: wiringData.settings?.clockSpeed || 16000000,
+            voltage: wiringData.settings?.voltage || 5,
+            serialBaudRate: wiringData.settings?.serialBaudRate || 9600,
+          },
+        };
+      }
+
       await db.insert(projects).values({
         id,
         userId,
         name: data.name,
         description: data.description || '',
         boardId,
-        data: payload,
+        data: JSON.stringify(payload),
         createdAt: now,
         updatedAt: now,
       });

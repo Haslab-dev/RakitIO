@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useRef, useEffect } from 'react'
+import { useCallback, useMemo, useRef, useEffect, useState } from 'react'
 import Editor from '@monaco-editor/react'
 import { useProjectStore, useUIStore, useSimulationStore } from '../lib/stores'
+import { tokenize, Parser } from '../lib/simulator/parser'
 
 function getLanguageFromFilename(filename: string): string {
   const ext = filename.split('.').pop()?.toLowerCase()
@@ -49,6 +50,7 @@ export default function MonacoEditor() {
   const editorRef = useRef<any>(null)
   const monacoRef = useRef<any>(null)
   const decorationsRef = useRef<string[]>([])
+  const [, setParseErrors] = useState<{line: number; message: string}[]>([])
 
   const activeFile = useMemo(() => {
     if (!project || !activeFileId) return null
@@ -97,6 +99,45 @@ export default function MonacoEditor() {
 
     monaco.editor.setTheme(theme === 'dark' ? 'rakit-dark' : 'rakit-light')
   }, [theme])
+
+  const validateCode = useCallback((code: string, monaco: any, editor: any) => {
+    const markers: any[] = []
+    try {
+      const tokens = tokenize(code)
+      const parser = new Parser(tokens)
+      parser.parse()
+      setParseErrors([])
+    } catch (err: any) {
+      const match = err.message.match(/\[Parser Line (\d+)\]/)
+      const line = match ? parseInt(match[1], 10) : 1
+      const message = err.message.replace(/\[Parser Line \d+\]\s*/, '')
+      markers.push({
+        severity: monaco.MarkerSeverity.Error,
+        message,
+        startLineNumber: line,
+        startColumn: 1,
+        endLineNumber: line,
+        endColumn: 1000,
+      })
+      setParseErrors([{ line, message }])
+    }
+    
+    if (editor) {
+      const model = editor.getModel()
+      if (model) {
+        monaco.editor.setModelMarkers(model, 'parser', markers)
+      }
+    }
+  }, [])
+
+  // Validate on code change (debounced)
+  useEffect(() => {
+    if (!activeFile || !monacoRef.current || !editorRef.current) return
+    const timer = setTimeout(() => {
+      validateCode(activeFile.content, monacoRef.current, editorRef.current)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [activeFile?.content, validateCode])
 
   // Dynamically switch theme
   useEffect(() => {

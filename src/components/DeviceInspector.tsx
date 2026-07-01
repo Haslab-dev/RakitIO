@@ -202,7 +202,8 @@ export default function DeviceInspector() {
     )
   }
 
-  const schema = DEVICE_SCHEMAS[selectedComponent.definitionId]
+  const schema = DEVICE_SCHEMAS[selectedComponent.definitionId] || {}
+  const componentProps = selectedComponent.properties || {}
 
   return (
     <div className="p-4 space-y-4">
@@ -215,7 +216,8 @@ export default function DeviceInspector() {
       {schema ? (
         <div className="space-y-3">
           {Object.entries(schema).map(([key, config]) => {
-            const val = selectedComponent.properties[key] ?? (config.type === 'slider' ? (config.min ?? 0) : false)
+            if (!config) return null
+            const val = componentProps[key] ?? (config.type === 'slider' ? (config.min ?? 0) : false)
 
             if (config.type === 'slider') {
               return (

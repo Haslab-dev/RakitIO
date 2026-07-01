@@ -686,6 +686,14 @@ export default function WiringPlayground() {
             const pressed = deviceState.pressed !== undefined ? Boolean(deviceState.pressed) : undefined
             const position = deviceState.position !== undefined ? Number(deviceState.position) : undefined
             const text = deviceState.text !== undefined ? String(deviceState.text) : undefined
+            const active = deviceState.active !== undefined ? Boolean(deviceState.active) : undefined
+            const frequency = deviceState.frequency !== undefined ? Number(deviceState.frequency) : undefined
+            const distance = deviceState.distance !== undefined ? Number(deviceState.distance) : undefined
+            const brightness = deviceState.brightness !== undefined ? Number(deviceState.brightness) : undefined
+            const motion = deviceState.motion !== undefined ? Boolean(deviceState.motion) : undefined
+            const r = deviceState.r !== undefined ? Number(deviceState.r) : undefined
+            const g = deviceState.g !== undefined ? Number(deviceState.g) : undefined
+            const b = deviceState.b !== undefined ? Number(deviceState.b) : undefined
 
             return (
               <g
@@ -729,6 +737,14 @@ export default function WiringPlayground() {
                   pressed={pressed}
                   position={position}
                   text={text}
+                  active={active}
+                  frequency={frequency}
+                  distance={distance}
+                  brightness={brightness}
+                  motion={motion}
+                  r={r}
+                  g={g}
+                  b={b}
                 />
 
                 <text

@@ -9,7 +9,12 @@ import {
   IconCpu,
   IconFolderOff,
   IconTrash,
+  IconBook,
+  IconChevronDown,
+  IconChevronRight,
+  IconCopy,
 } from '@tabler/icons-react'
+import { EXAMPLE_PROJECTS, getDifficultyLabel } from '../lib/examples/registry'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
@@ -20,6 +25,8 @@ export default function DashboardPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [showExamples, setShowExamples] = useState(true)
+  const [selectedExample, setSelectedExample] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/auth', { replace: true })
@@ -44,6 +51,48 @@ export default function DashboardPage() {
     try { await api.auth.logout() } catch { /* ignore */ }
     logout()
     navigate('/')
+  }
+
+  const handleLoadExample = async (exampleId: string) => {
+    const example = EXAMPLE_PROJECTS.find((e) => e.id === exampleId)
+    if (!example) return
+
+    setSelectedExample(exampleId)
+
+    try {
+      const [codeRes, wiringRes] = await Promise.all([
+        fetch(example.file),
+        fetch(example.wiring),
+      ])
+
+      if (!codeRes.ok || !wiringRes.ok) {
+        throw new Error('Failed to load example')
+      }
+
+      const code = await codeRes.text()
+      const wiring = await wiringRes.json()
+
+      createMut.mutate(
+        {
+          name: example.name,
+          description: example.description,
+          code,
+          wiring: JSON.stringify(wiring),
+        },
+        {
+          onSuccess: (res) => {
+            setSelectedExample(null)
+            navigate(`/project/${res.id}`)
+          },
+          onError: () => {
+            setSelectedExample(null)
+          },
+        },
+      )
+    } catch (err) {
+      setSelectedExample(null)
+      console.error('Failed to load example:', err)
+    }
   }
 
   if (!isAuthenticated) return null
@@ -86,8 +135,95 @@ export default function DashboardPage() {
 
       {/* Main Area */}
       <main className="max-w-5xl mx-auto w-full px-6 py-12 flex-1">
+        {/* Examples Section */}
         <div className="mb-10">
-          <h2 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+          <button
+            onClick={() => setShowExamples(!showExamples)}
+            className="flex items-center gap-2 mb-4 group"
+          >
+            <div className="w-8 h-8 rounded bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:text-indigo-300 transition-colors">
+              <IconBook size={16} />
+            </div>
+            <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+              Example Projects
+            </h2>
+            {showExamples ? (
+              <IconChevronDown size={18} className="text-slate-500 ml-1" />
+            ) : (
+              <IconChevronRight size={18} className="text-slate-500 ml-1" />
+            )}
+          </button>
+          <p className="text-xs text-slate-400 mt-1.5 ml-10">
+            Learn Arduino with ready-to-run examples
+          </p>
+        </div>
+
+        {showExamples && (
+          <div className="mb-14">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {EXAMPLE_PROJECTS.map((example) => (
+                <button
+                  key={example.id}
+                  onClick={() => handleLoadExample(example.id)}
+                  disabled={selectedExample !== null}
+                  className="group border border-slate-800/80 rounded-xl bg-[#0B0B11] hover:bg-[#0B0B11]/80 hover:border-indigo-500/40 transition-all duration-300 text-left relative overflow-hidden disabled:opacity-50 cursor-pointer"
+                >
+                  <div className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{example.icon}</span>
+                        <div>
+                          <h3 className="font-semibold text-slate-200 group-hover:text-indigo-400 transition-colors text-sm">
+                            {example.name}
+                          </h3>
+                          <span className={`text-[10px] font-mono ${
+                            example.difficulty === 'Beginner' ? 'text-green-400' :
+                            example.difficulty === 'Intermediate' ? 'text-yellow-400' :
+                            'text-orange-400'
+                          }`}>
+                            {example.difficulty} {getDifficultyLabel(example.difficultyStars)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-slate-400 text-[11px] line-clamp-2 leading-relaxed">
+                      {example.description}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+                      {example.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800/60 text-slate-400"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-end mt-3 pt-2 border-t border-slate-800/50">
+                      <span className={`text-[10px] flex items-center gap-1 ${
+                        selectedExample === example.id
+                          ? 'text-indigo-400'
+                          : 'text-slate-500 group-hover:text-indigo-400 transition-colors'
+                      }`}>
+                        {selectedExample === example.id ? (
+                          'Loading...'
+                        ) : (
+                          <>
+                            <IconCopy size={12} /> Copy & Run
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Projects Space */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
             Projects Space
           </h2>
           <p className="text-xs text-slate-400 mt-1.5">

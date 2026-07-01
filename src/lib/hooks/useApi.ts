@@ -20,8 +20,13 @@ export function useProject(id: string) {
 export function useCreateProject() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; description?: string; boardId?: string }) =>
-      api.projects.create(data),
+    mutationFn: (data: {
+      name: string;
+      description?: string;
+      boardId?: string;
+      code?: string;
+      wiring?: string;
+    }) => api.projects.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['projects'] }),
   });
 }
